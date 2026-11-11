@@ -5,6 +5,7 @@ const field = (id: string, value: string): string =>
   id + String(value.length).padStart(2, '0') + value;
 
 export function buildPixPayload(p: { key: string; name: string; city: string }): string {
+  if (/[^\x20-\x7e]/.test(p.key)) throw new Error('Pix key must be ASCII');
   if (p.key.length > 77) throw new Error('Pix key too long');
   const body =
     field('00', '01') +

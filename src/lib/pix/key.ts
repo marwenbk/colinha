@@ -6,7 +6,7 @@ import { normalizeBrMobile } from '../br/phone';
 export type PixKeyType = 'cpf' | 'cnpj' | 'phone' | 'email' | 'evp';
 export type PixKeyCandidate = { type: PixKeyType; value: string };
 
-const EMAIL = /^[^\s@]+@[^\s@.]+(\.[^\s@.]+)+$/;
+const EMAIL = /^[!-?A-~]+@[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}$/;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const CPF_MASK = /^\d{3}\.\d{3}\.\d{3}-\d{2}$/;
 

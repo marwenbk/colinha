@@ -24,6 +24,7 @@ test('detectPixKey', () => {
   expect(detectPixKey('abc')).toEqual([]);
   expect(detectPixKey('')).toEqual([]);
   expect(detectPixKey('a@b')).toEqual([]);
+  expect(detectPixKey('josé@x.com')).toEqual([]);
 });
 
 test('buildPixPayload', () => {
@@ -44,4 +45,8 @@ test('buildPixPayload key length limit', () => {
   expect(k77.length).toBe(77);
   expect(buildPixPayload({ key: k77, name: 'A', city: 'B' }).slice(6, 10)).toBe('2699');
   expect(() => buildPixPayload({ key: 'a' + k77, name: 'A', city: 'B' })).toThrow();
+});
+
+test('buildPixPayload rejects non-ASCII key', () => {
+  expect(() => buildPixPayload({ key: 'josé@x.com', name: 'A', city: 'B' })).toThrow();
 });
