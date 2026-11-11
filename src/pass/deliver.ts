@@ -5,6 +5,8 @@ import { unzipSync } from 'fflate';
 import { PKPASS_TYPE } from './pkpass';
 
 export const PASS_CACHE = 'colinha-pass';
+/** How long to wait for the pass worker before falling back to a download. */
+export const READY_TIMEOUT_MS = 3000;
 
 /** Indirection so tests can observe the navigation (jsdom's location can't be spied on). */
 export const passNavigation = {
@@ -54,10 +56,26 @@ export async function deliverPass(blob: Blob): Promise<void> {
     download(blob);
     return;
   }
+  // No registration (never registered, or registering failed): `ready` would never resolve.
+  if (!(await navigator.serviceWorker.getRegistration('/'))) {
+    download(blob);
+    return;
+  }
   const path = `/__pass/${serialOf(new Uint8Array(await blob.arrayBuffer()))}.pkpass`;
   const cache = await caches.open(PASS_CACHE);
   for (const req of await cache.keys()) await cache.delete(req);
   await cache.put(path, new Response(blob, { headers: { 'Content-Type': PKPASS_TYPE } }));
-  await navigator.serviceWorker.ready;
-  passNavigation.go(path);
+  if (await workerReady()) passNavigation.go(path);
+  else download(blob);
+}
+
+/** True once the pass worker is active; false if that takes longer than READY_TIMEOUT_MS. */
+function workerReady(): Promise<boolean> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const timeout = new Promise<boolean>((resolve) => {
+    timer = setTimeout(() => resolve(false), READY_TIMEOUT_MS);
+  });
+  return Promise.race([navigator.serviceWorker.ready.then(() => true), timeout]).finally(() =>
+    clearTimeout(timer),
+  );
 }

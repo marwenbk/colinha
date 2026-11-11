@@ -38,7 +38,9 @@ Use **(c), the service-worker response**, because it mirrors Apple's documented 
 
 ## Fallback
 
-If the browser has no service worker or Cache Storage, `deliverPass` clicks
+If the browser has no service worker or Cache Storage, if no worker is registered
+(`getRegistration()` finds none), or if `navigator.serviceWorker.ready` takes longer than 3 seconds,
+`deliverPass` clicks
 `<a href="blob:…" download="colinha.pkpass">`. The file lands in Safari's downloads and tapping
 it opens Wallet. If the device checks show that (c) doesn't open the sheet but (b) does, switch
 `deliverPass` to this path for everyone. Either way, pass bytes never leave the device and never

@@ -21,6 +21,8 @@ function fakeCaches() {
 }
 
 afterEach(() => {
+  vi.useRealTimers();
+  vi.restoreAllMocks();
   vi.unstubAllEnvs();
   vi.unstubAllGlobals();
   vi.resetModules();
@@ -32,7 +34,9 @@ describe('deliverPass', () => {
     store.set(new URL('/__pass/old.pkpass', location.href).href, new Response('old'));
     vi.stubGlobal('caches', api);
     const register = vi.fn(async () => ({}));
-    vi.stubGlobal('navigator', { serviceWorker: { ready: Promise.resolve({}), register } });
+    vi.stubGlobal('navigator', {
+      serviceWorker: { ready: Promise.resolve({}), register, getRegistration: async () => ({}) },
+    });
     const { deliverPass, passNavigation } = await import('../../../src/pass/deliver');
     const go = vi.spyOn(passNavigation, 'go').mockImplementation(() => {});
     await deliverPass(blobOf(SERIAL));
@@ -62,5 +66,53 @@ describe('deliverPass', () => {
     expect(register).toHaveBeenCalledWith('/sw.js', { scope: '/' });
     await clearPassCache();
     expect(api.delete).toHaveBeenCalledWith('colinha-pass');
+  });
+});
+
+describe('deliverPass fallback to download', () => {
+  async function setup(sw: { ready: Promise<unknown>; getRegistration: () => Promise<unknown> }) {
+    const { api } = fakeCaches();
+    vi.stubGlobal('caches', api);
+    vi.stubGlobal('navigator', { serviceWorker: { register: vi.fn(), ...sw } });
+    vi.stubGlobal('URL', Object.assign(class extends URL {}, {
+      createObjectURL: vi.fn(() => 'blob:https://colinha.app/x'),
+      revokeObjectURL: vi.fn(),
+    }));
+    const clicks: HTMLAnchorElement[] = [];
+    vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(function (this: HTMLAnchorElement) {
+      clicks.push(this);
+    });
+    const mod = await import('../../../src/pass/deliver');
+    const go = vi.spyOn(mod.passNavigation, 'go').mockImplementation(() => {});
+    return { ...mod, go, clicks };
+  }
+
+  it('downloads right away when there is no registration', async () => {
+    const { deliverPass, go, clicks } = await setup({
+      ready: new Promise(() => {}),
+      getRegistration: async () => undefined,
+    });
+    await deliverPass(blobOf(SERIAL));
+    expect(go).not.toHaveBeenCalled();
+    expect(clicks).toHaveLength(1);
+    expect(clicks[0].download).toBe('colinha.pkpass');
+    expect(clicks[0].href).toBe('blob:https://colinha.app/x');
+  });
+
+  it('downloads when ready never resolves, within the timeout', async () => {
+    vi.useFakeTimers();
+    const { deliverPass, go, clicks, READY_TIMEOUT_MS } = await setup({
+      ready: new Promise(() => {}),
+      getRegistration: async () => ({}),
+    });
+    let done = false;
+    const p = deliverPass(blobOf(SERIAL)).then(() => { done = true; });
+    await vi.advanceTimersByTimeAsync(READY_TIMEOUT_MS - 1);
+    expect(done).toBe(false);
+    await vi.advanceTimersByTimeAsync(1);
+    await p;
+    expect(READY_TIMEOUT_MS).toBe(3000);
+    expect(go).not.toHaveBeenCalled();
+    expect(clicks).toHaveLength(1);
   });
 });
