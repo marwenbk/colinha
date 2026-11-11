@@ -20,6 +20,8 @@ export default defineConfig({
             wrangler: { configPath: './wrangler.jsonc' },
           }),
         ],
+        // Lets worker tests import binary DER fixtures as base64 data URLs (`?inline`).
+        assetsInclude: ['**/*.der'],
         test: {
           name: 'worker',
           include: ['worker/test/**/*.test.ts'],
