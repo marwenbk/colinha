@@ -101,6 +101,29 @@ describe('POST /api/sign', () => {
     }
   });
 
+  test('400 as soon as a streamed body without Content-Length passes 32 bytes', async () => {
+    let pulls = 0;
+    const stream = new ReadableStream<Uint8Array>({
+      pull(c) {
+        pulls++;
+        c.enqueue(new Uint8Array(20)); // never closes: arrayBuffer() would hang
+      },
+    });
+    const req = new Request('https://x/api/sign', {
+      method: 'POST',
+      body: stream,
+      duplex: 'half',
+    } as RequestInit);
+    const res = await call(req, makeEnv());
+    expect(res.status).toBe(400);
+    expect(pulls).toBeLessThan(10);
+  });
+
+  test('400 for a null body', async () => {
+    const res = await call(post(null), makeEnv());
+    expect(res.status).toBe(400);
+  });
+
   test('429 when the limiter refuses, keyed by cf-connecting-ip', async () => {
     const limiter = {
       limit: vi.fn(async (_o: { key: string }) => ({ success: false })),

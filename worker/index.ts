@@ -58,6 +58,25 @@ function text(status: number, body: string, extra: HeadersInit = {}) {
   });
 }
 
+/** Reads the body, giving up as soon as it passes 32 bytes. Null unless exactly 32. */
+async function readExactly32(request: Request): Promise<Uint8Array | null> {
+  if (!request.body) return null;
+  const reader = request.body.getReader();
+  const out = new Uint8Array(32);
+  let n = 0;
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    if (n + value.length > 32) {
+      await reader.cancel().catch(() => {});
+      return null;
+    }
+    out.set(value, n);
+    n += value.length;
+  }
+  return n === 32 ? out : null;
+}
+
 async function sign(request: Request, env: Env): Promise<Response> {
   if (request.method !== 'POST')
     return text(405, 'Method not allowed', { Allow: 'POST' });
@@ -73,8 +92,8 @@ async function sign(request: Request, env: Env): Promise<Response> {
 
   const declared = request.headers.get('Content-Length');
   if (declared !== null && declared !== '32') return text(400, 'Bad request');
-  const digest = new Uint8Array(await request.arrayBuffer());
-  if (digest.length !== 32) return text(400, 'Bad request');
+  const digest = await readExactly32(request);
+  if (!digest) return text(400, 'Bad request');
 
   try {
     const signer = await loadSigner(env);
