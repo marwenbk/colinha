@@ -1,0 +1,22 @@
+{
+  "name": "colinha",
+  "main": "worker/index.ts",
+  "compatibility_date": "2026-11-01",
+  "assets": { "binding": "ASSETS", "run_worker_first": ["/api/*"] },
+  "observability": { "enabled": false, "logs": { "invocation_logs": false } },
+  "env": {
+    "preview": {
+      "workers_dev": true,
+      "observability": {
+        "enabled": false,
+        "logs": { "invocation_logs": false },
+      },
+    },
+    "production": {
+      "observability": {
+        "enabled": false,
+        "logs": { "invocation_logs": false },
+      },
+    },
+  },
+}

@@ -1,0 +1,28 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "types": [
+      "svelte",
+      "vite/client",
+      "node",
+      "@cloudflare/vitest-plugin/types"
+    ],
+    "strict": true,
+    "verbatimModuleSyntax": true,
+    "isolatedModules": true,
+    "skipLibCheck": true,
+    "noEmit": true,
+    "resolveJsonModule": true
+  },
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.svelte",
+    "worker/**/*.ts",
+    "tests/**/*.ts",
+    "*.ts",
+    "*.js"
+  ]
+}
