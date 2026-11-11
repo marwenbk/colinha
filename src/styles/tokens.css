@@ -1,0 +1,68 @@
+/* Colinha design tokens. Source of truth: docs/superpowers/specs/2026-11-10-colinha-design.md, "Look". */
+:root {
+  color-scheme: light dark;
+
+  /* Colors (light) */
+  --bg: #f2f2f7;
+  --surface: #ffffff;
+  --label: #000000;
+  --label-2: rgb(60 60 67 / 0.6);
+  --separator: rgb(60 60 67 / 0.29);
+  --danger: #ff3b30;
+  --ok: #34c759;
+
+  /* Glass */
+  --glass-bg: color-mix(in srgb, var(--surface) 60%, transparent);
+  --glass-blur: blur(16px) saturate(180%);
+  --glass-edge: rgb(255 255 255 / 0.55);
+  --glass-shadow: 0 8px 24px rgb(0 0 0 / 0.12);
+
+  /* Card shadow (cards only; lists are flat) */
+  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.1), 0 10px 30px rgb(0 0 0 / 0.14);
+
+  /* Radii */
+  --r-capsule: 9999px;
+  --r-page: 24px;
+  --r-float: 32px;
+  --r-group: 20px;
+  --r-card: 14px;
+
+  /* Spacing: 4pt base */
+  --s-1: 4px;
+  --s-2: 8px;
+  --s-3: 12px;
+  --s-4: 16px;
+  --s-6: 24px;
+  --s-8: 32px;
+  --margin: 16px;
+  --target: 44px;
+
+  /* Type: rem is anchored to Body (17pt), so Dynamic Type scales everything */
+  --font: -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --t-large: 700 2rem/1.2059 var(--font); /* 34/41 */
+  --t-title: 700 1.2941rem/1.2727 var(--font); /* 22/28 */
+  --t-headline: 600 1rem/1.2941 var(--font); /* 17/22 */
+  --t-body: 400 1rem/1.2941 var(--font); /* 17/22 */
+  --t-footnote: 400 0.7647rem/1.3846 var(--font); /* 13/18 */
+  --t-caption: 400 0.7059rem/1.3333 var(--font); /* 12/16 */
+
+  /* Motion: no overshoot anywhere */
+  --ease-sheet: cubic-bezier(0.32, 0.72, 0, 1);
+  --dur-sheet: 420ms;
+  --dur-micro: 150ms;
+  --dur-pocket: 360ms;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #000000;
+    --surface: #1c1c1e;
+    --label: #ffffff;
+    --label-2: rgb(235 235 245 / 0.6);
+    --separator: rgb(84 84 88 / 0.65);
+    --danger: #ff453a;
+    --ok: #30d158;
+    --glass-edge: rgb(255 255 255 / 0.14);
+    --glass-shadow: 0 8px 24px rgb(0 0 0 / 0.4);
+  }
+}

@@ -1,0 +1,118 @@
+/* Global base styles. Component styles stay scoped in their .svelte files. */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  /* Body is 17pt; on iOS the system body font takes over so Dynamic Type works. */
+  font-size: 106.25%;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+@supports (font: -apple-system-body) {
+  html {
+    font: -apple-system-body;
+  }
+}
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  background: var(--bg);
+  color: var(--label);
+  font-family: var(--font);
+  font-size: 1rem;
+  line-height: 1.2941;
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+  text-transform: none;
+}
+
+html.page-sheet-open body {
+  background: #000;
+}
+
+#app {
+  min-height: 100dvh;
+  background: var(--bg);
+  transform-origin: 50% 0;
+  transition:
+    transform var(--dur-sheet) var(--ease-sheet),
+    border-radius var(--dur-sheet) var(--ease-sheet),
+    opacity var(--dur-sheet) var(--ease-sheet);
+}
+
+#app.behind-page-sheet {
+  transform: scale(0.94);
+  border-radius: var(--r-page);
+  overflow: hidden;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+:focus {
+  outline: none;
+}
+
+:focus-visible {
+  outline: 2px solid var(--label);
+  outline-offset: 2px;
+}
+
+.tnum {
+  font-variant-numeric: tabular-nums;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* Rows inside an inset grouped list (Group). Flat: no shadow. */
+.row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  min-height: var(--target);
+  padding: 0 var(--s-4);
+}
+
+.row + .row::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: var(--s-4);
+  right: 0;
+  height: 0.5px;
+  background: var(--separator);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #app {
+    transition: opacity var(--dur-sheet) linear;
+  }
+
+  #app.behind-page-sheet {
+    transform: none;
+    border-radius: 0;
+    opacity: 0.6;
+  }
+}

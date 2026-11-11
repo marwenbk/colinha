@@ -14,7 +14,7 @@ const upper = (max: number, re: RegExp) => (s: string) =>
 export const FIELDS: Record<CardType, FieldSpec[]> = {
   docs: [
     { id: 'cpf', label: 'field.cpf', required: true, maxLength: 11, inputmode: 'numeric',
-      normalize: (s) => normalizeCpf(s).slice(0, 11), valid: isValidCpf, format: formatCpf },
+      normalize: (s) => normalizeCpf(s).slice(0, 11), mask: '000.000.000-00', valid: isValidCpf, format: formatCpf },
     { id: 'name', label: 'field.name', required: true, maxLength: 40, autocomplete: 'name',
       normalize: text(40), valid: nonEmpty },
     { id: 'rg', label: 'field.rg', required: false, maxLength: 20, uppercase: true,
@@ -27,7 +27,7 @@ export const FIELDS: Record<CardType, FieldSpec[]> = {
   address: [
     { id: 'cep', label: 'field.cep', required: true, maxLength: 8, inputmode: 'numeric',
       autocomplete: 'postal-code', normalize: (s) => normalizeCep(s).slice(0, 8),
-      valid: isValidCep, format: formatCep },
+      mask: '00000-000', valid: isValidCep, format: formatCep },
     { id: 'line1', label: 'field.line1', required: true, maxLength: 60,
       autocomplete: 'address-line1', normalize: text(60), valid: nonEmpty },
     { id: 'line2', label: 'field.line2', required: false, maxLength: 30,
