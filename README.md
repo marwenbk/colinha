@@ -36,7 +36,7 @@ scripts/prepare-cert.sh Certificates.p12 preview WWDR.cer     # or: production
 
 It converts the key and certificates and runs `wrangler secret put` for `PASS_KEY_PKCS8`, `PASS_CERT_B64` and `WWDR_CERT_B64`. You can also set a single secret by hand: `pnpm wrangler secret put <NAME> --env <env>`.
 
-**Deploy.** Environments are `preview` (on `workers.dev`) and `production` (custom domain `colinha.app`, set in `wrangler.jsonc`):
+**Deploy.** Environments are `preview` (on `workers.dev`) and `production` (custom domain `colinha.xyz`, set in `wrangler.jsonc`):
 
 ```sh
 CLOUDFLARE_ENV=<env> pnpm run deploy     # defaults to production
@@ -63,21 +63,18 @@ Needs OpenSSL 3 with `cms` (on macOS, Homebrew `openssl@3`); set `OPENSSL=/path/
 
 ## Renewing the certificate
 
-Pass Type ID certificates expire. `/api/health` shows `certNotAfter`; renew before that date. Create the new certificate under the same Pass Type ID (`pass.app.colinha.card`), so passes people already added stay updatable. Then run `scripts/prepare-cert.sh` again for each environment and redeploy.
+Pass Type ID certificates expire. `/api/health` shows `certNotAfter`; renew before that date. Create the new certificate under the same Pass Type ID (`pass.xyz.colinha.card`), so passes people already added stay updatable. Then run `scripts/prepare-cert.sh` again for each environment and redeploy.
 
 ## Before launch
 
-Replace the placeholders:
-
-- the Apple "Add to Apple Wallet" badges in `public/badges` with the official artwork;
-- `TEAM_ID` and `GITHUB_URL` in `src/config.ts`;
-- the domain in `wrangler.jsonc` and `SITE_ORIGIN` in `src/config.ts`, if you don't use `colinha.app`.
+- The wallet glyph in `src/ui/icons/WalletIcon.svelte` is drawn for Colinha, not Apple's icon, and the Editor's button reads "Add to wallet" instead of Apple's official "Add to Apple Wallet" badge, which Apple's guidelines ask websites to use. Check this against Apple's guidelines.
+- Running your own copy: set `SITE_ORIGIN`, `PASS_TYPE_ID`, `TEAM_ID` and `GITHUB_URL` in `src/config.ts` and the domain in `wrangler.jsonc` to your own, and register your own Pass Type ID with Apple.
 
 Launch checks:
 
 - [ ] Workers Logs in the Cloudflare dashboard show no entries for the Worker.
 - [ ] `/api/health` reports `"rateLimit": true`. If it reports `false`, add the Free plan's one WAF rate-limiting rule: path `/api/sign`, counted by IP, 10 requests per 10 s.
-- [ ] `curl -sI https://colinha.app/` shows the `Content-Security-Policy` header.
+- [ ] `curl -sI https://colinha.xyz/` shows the `Content-Security-Policy` header.
 - [ ] Device QA (iPhone on current iOS, Safari, light and dark mode):
   - [ ] Each card type opens the Wallet sheet and looks right.
   - [ ] Editing and re-adding updates the same pass, with no duplicate.

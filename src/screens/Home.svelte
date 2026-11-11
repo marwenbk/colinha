@@ -1,64 +1,118 @@
 <script lang="ts">
-  import { newCard } from '../cards/templates';
-  import type { Card, CardType } from '../cards/types';
+  import { untrack } from 'svelte';
+  import type { Card, CardType, PassLayout } from '../cards/types';
   import { ORG_NAME } from '../config';
   import { t } from '../i18n/current';
-  import GlassButton from '../ui/GlassButton.svelte';
   import Lock from '../ui/icons/Lock.svelte';
-  import Plus from '../ui/icons/Plus.svelte';
   import PassCard from '../ui/PassCard.svelte';
-  import { previewLayout } from './preview';
+  import { previewLayout, sampleLayout } from './preview';
 
   let {
     list,
     oncreate,
     onedit,
-    onnew,
     oninfo,
   }: {
     list: Card[];
     oncreate: (type: CardType) => void;
     onedit: (card: Card) => void;
-    onnew: () => void;
     oninfo: () => void;
   } = $props();
 
-  const TYPES: CardType[] = ['docs', 'address', 'pix'];
-  // Empty state: each type in its default color, with placeholder values.
-  const samples = TYPES.map((type) => ({ type, layout: previewLayout(newCard(type), t) }));
+  // Home is a carousel: Pix on the left, the CPF card in the middle (where it
+  // opens), Address on the right; swipe to switch. A type with nothing saved
+  // shows its example.
+  const samples = {
+    pix: sampleLayout('pix', t),
+    docs: sampleLayout('docs', t),
+    address: sampleLayout('address', t),
+  };
+  const newest = (type: CardType) =>
+    list.filter((c) => c.type === type).sort((a, b) => b.updatedAt - a.updatedAt)[0];
 
-  // Oldest on top; the newest card is shown in full at the bottom.
-  const stack = $derived([...list].sort((a, b) => a.updatedAt - b.updatedAt));
+  type Slide = { key: string; type: CardType; card: Card | null; layout: PassLayout };
+  const slide = (type: CardType, card: Card | undefined): Slide =>
+    card
+      ? { key: card.id, type, card, layout: previewLayout(card, t) }
+      : { key: `sample-${type}`, type, card: null, layout: samples[type] };
+
+  const docs = $derived(
+    list.filter((c) => c.type === 'docs').sort((a, b) => a.updatedAt - b.updatedAt),
+  );
+  const slides = $derived([
+    slide('pix', newest('pix')),
+    ...(docs.length > 0 ? docs.map((c) => slide('docs', c)) : [slide('docs', undefined)]),
+    slide('address', newest('address')),
+  ]);
+  const hasDocs = $derived(docs.length > 0);
+
+  let scroller: HTMLDivElement | undefined = $state();
+  // Start on the (first) CPF card.
+  let active = $state(1);
+
+  const reduced = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function centerOf(i: number): number {
+    const el = scroller?.children[i] as HTMLElement | undefined;
+    if (!scroller || !el) return 0;
+    return el.offsetLeft + el.offsetWidth / 2 - scroller.clientWidth / 2;
+  }
+
+  function goTo(i: number, smooth = true) {
+    scroller?.scrollTo({ left: centerOf(i), behavior: smooth && !reduced() ? 'smooth' : 'auto' });
+    active = i;
+  }
+
+  function track() {
+    if (!scroller) return;
+    const mid = scroller.scrollLeft;
+    let best = 0;
+    for (let i = 1; i < slides.length; i++)
+      if (Math.abs(centerOf(i) - mid) < Math.abs(centerOf(best) - mid)) best = i;
+    active = best;
+  }
+
+  $effect(() => {
+    if (scroller) untrack(() => goTo(1, false));
+  });
+
+  function open(s: Slide) {
+    if (s.card) onedit(s.card);
+    else oncreate(s.type);
+  }
+
+  /** The middle card opens; a card peeking at the side slides to the middle first. */
+  function tapCard(i: number) {
+    if (i === active) open(slides[i]);
+    else goTo(i);
+  }
 </script>
 
 <main class="home">
   <header>
     <h1>{ORG_NAME}</h1>
-    {#if list.length > 0}
-      <GlassButton icon={Plus} label={t('a11y.newCard')} onclick={onnew} />
+    {#if !hasDocs}
+      <p class="tagline">{t('app.tagline')}</p>
     {/if}
   </header>
 
-  {#if list.length === 0}
-    <p class="tagline">{t('app.tagline')}</p>
-    <div class="samples">
-      {#each samples as s (s.type)}
-        <button type="button" class="card-button dim" onclick={() => oncreate(s.type)}>
-          <PassCard layout={s.layout} compact />
-        </button>
+  <section class="deck">
+    <div class="scroller" bind:this={scroller} onscroll={track}>
+      {#each slides as s, i (s.key)}
+        <div class="slide">
+          <button type="button" class="card-button" onclick={() => tapCard(i)}>
+            <span class="visually-hidden">{t(`card.${s.type}`)}</span>
+            <PassCard layout={s.layout} sample={!s.card} />
+          </button>
+        </div>
       {/each}
     </div>
-  {:else}
-    <ol class="stack">
-      {#each stack as card, i (card.id)}
-        <li>
-          <button type="button" class="card-button" onclick={() => onedit(card)}>
-            <PassCard layout={previewLayout(card, t)} compact={i < stack.length - 1} />
-          </button>
-        </li>
+    <div class="dots" aria-hidden="true">
+      {#each slides as s, i (s.key)}
+        <span class="dot" class:on={i === active}></span>
       {/each}
-    </ol>
-  {/if}
+    </div>
+  </section>
 
   <button type="button" class="privacy" onclick={oninfo}>
     <Lock size={15} />
@@ -78,9 +132,6 @@
   }
 
   header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
     min-height: var(--target);
   }
 
@@ -95,22 +146,58 @@
     color: var(--label-2);
   }
 
-  .samples {
+  /*
+   * The carousel takes the free height and sits in its middle. It runs edge
+   * to edge of the window, past the page column, so cards slide off the
+   * screen's edges instead of being cut inside it.
+   */
+  .deck {
+    --card-w: min(86vw, 380px, calc((100dvh - 230px) * 0.769));
     display: flex;
+    flex: 1;
     flex-direction: column;
+    justify-content: center;
     gap: var(--s-3);
-    margin: var(--s-6) 0 var(--s-8);
+    margin: var(--s-2) calc(50% - 50vw);
   }
 
-  .stack {
-    margin: var(--s-4) 0 var(--s-8);
-    padding: 0;
-    list-style: none;
+  .scroller {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: var(--s-3);
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+    /*
+     * Room for the card shadow (0 10px 30px), which the scroll box would
+     * otherwise cut into a hard line; the negative margin keeps the layout.
+     */
+    padding: 40px 0;
+    margin: -24px 0;
+    scrollbar-width: none;
   }
 
-  /* Wallet-like stack: each card tucks under the next one. */
-  .stack li + li {
-    margin-top: calc(-1 * var(--r-card));
+  .scroller::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Spacers, so the first and last cards can sit in the middle. */
+  .scroller::before,
+  .scroller::after {
+    content: '';
+    flex: 0 0 max(0px, calc((100% - var(--card-w)) / 2 - var(--s-3)));
+  }
+
+  /*
+   * A card is 86% of the screen width, at most a phone's 380pt, and never
+   * taller than the screen allows: about 230pt go to the title, the dots and
+   * the privacy line, and a pass is 320:416, so its width is at most
+   * (height - 230) x 320/416.
+   */
+  .slide {
+    flex: 0 0 var(--card-w);
+    scroll-snap-align: center;
   }
 
   .card-button {
@@ -121,19 +208,31 @@
     border-radius: var(--r-card);
     background: transparent;
     text-align: start;
-    transition: opacity var(--dur-micro) ease-out;
+    transition: transform var(--dur-micro) ease-out;
   }
 
   .card-button:active {
-    opacity: 0.85;
+    transform: scale(0.985);
   }
 
-  .dim {
-    opacity: 0.45;
+  .dots {
+    display: flex;
+    justify-content: center;
+    gap: var(--s-2);
   }
 
-  .dim:active {
-    opacity: 0.35;
+  .dot {
+    width: 7px;
+    height: 7px;
+    border-radius: var(--r-capsule);
+    background: var(--label-2);
+    opacity: 0.4;
+    transition: opacity var(--dur-micro) ease-out;
+  }
+
+  .dot.on {
+    opacity: 1;
+    background: var(--label);
   }
 
   .privacy {
@@ -142,12 +241,19 @@
     justify-content: center;
     gap: var(--s-2);
     min-height: var(--target);
-    margin: auto auto 0;
+    margin: var(--s-4) auto 0;
     padding: 0 var(--s-4);
     border: 0;
     border-radius: var(--r-capsule);
     background: transparent;
     font: var(--t-footnote);
     color: var(--label-2);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .card-button:active {
+      transform: none;
+      opacity: 0.8;
+    }
   }
 </style>

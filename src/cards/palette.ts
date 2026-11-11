@@ -1,13 +1,8 @@
-import type { ColorId } from './types';
-
-const BG: Record<ColorId, [number, number, number]> = {
-  graphite: [28, 28, 30],
-  blue: [0, 64, 221],
-  green: [30, 120, 52],
-  teal: [0, 118, 140],
-  purple: [137, 68, 171],
-  orange: [201, 52, 0],
-};
+// Pass colours. The background image covers the pass; backgroundColor is
+// Wallet's fallback behind it: each card type's own vivid colour, as dark as
+// the text band of the art (see bodyRgb in src/pass/art.ts). Labels are
+// light enough to read on any part of that band.
+import { bodyRgb, type Tone } from '../pass/art';
 
 export function luminance([r, g, b]: readonly number[]): number {
   const f = (c: number) => {
@@ -24,6 +19,7 @@ export function contrast(a: readonly number[], b: readonly number[]): number {
 
 const rgb = (c: readonly number[]) => `rgb(${c[0]},${c[1]},${c[2]})`;
 
+/** White mixed into the background, from 70% up in 5% steps, until contrast >= 4.5. */
 function labelFor(bg: readonly number[]): number[] {
   let p = 70;
   for (;;) {
@@ -33,6 +29,7 @@ function labelFor(bg: readonly number[]): number[] {
   }
 }
 
-export const PALETTE = Object.fromEntries(
-  (Object.keys(BG) as ColorId[]).map((id) => [id, { bg: rgb(BG[id]), label: rgb(labelFor(BG[id])) }]),
-) as Record<ColorId, { bg: string; label: string }>;
+export function passColors(tone: Tone = 'docs'): { bg: string; fg: string; label: string } {
+  const bg = bodyRgb(tone);
+  return { bg: rgb(bg), fg: 'rgb(255,255,255)', label: rgb(labelFor(bg)) };
+}

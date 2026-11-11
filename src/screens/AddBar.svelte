@@ -1,10 +1,10 @@
-<!-- The Editor's bottom glass bar: the Wallet badge, or the guard for this browser. -->
+<!-- The Editor's bottom glass bar: the Add to wallet button, or the guard for this browser. -->
 <script lang="ts">
   import type { Env } from '../env/detect';
-  import { locale, t } from '../i18n/current';
+  import { t } from '../i18n/current';
   import Copy from '../ui/icons/Copy.svelte';
   import Smartphone from '../ui/icons/Smartphone.svelte';
-  import WalletBadge from '../ui/WalletBadge.svelte';
+  import WalletButton from '../ui/WalletButton.svelte';
   import GuardSheet from './GuardSheet.svelte';
 
   let {
@@ -44,14 +44,14 @@
   }
 </script>
 
-<div class="bar" bind:offsetHeight={height}>
+<div class="bar" class:bare={env.platform === 'ios' && !env.inApp} bind:offsetHeight={height}>
   {#if env.inApp}
     <p class="banner">{t('guard.inApp')}</p>
     <button type="button" class="capsule" onclick={copy}>
       <Copy size={18} /><span>{t('guard.copyLink')}</span>
     </button>
   {:else if env.platform === 'ios'}
-    <WalletBadge locale={locale()} {busy} onclick={onadd} />
+    <WalletButton {busy} onclick={onadd} />
   {:else if env.platform === 'android'}
     <p class="banner">{t('guard.android')}</p>
   {:else}
@@ -83,6 +83,15 @@
     box-shadow:
       inset 0 0 0 0.5px var(--glass-edge),
       var(--glass-shadow);
+  }
+
+  /* With only the Wallet button, no glass frame around it: the button stands alone. */
+  .bar.bare {
+    padding: 0;
+    background: none;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    box-shadow: none;
   }
 
   .banner {

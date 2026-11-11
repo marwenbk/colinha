@@ -2,11 +2,9 @@
 
 exports[`buildPassJson > matches the address snapshot 1`] = `
 {
-  "backgroundColor": "rgb(0,64,221)",
+  "backgroundColor": "rgb(0,98,143)",
   "description": "Endereço",
-  "foregroundColor": "rgb(255,255,255)",
-  "formatVersion": 1,
-  "generic": {
+  "eventTicket": {
     "auxiliaryFields": [
       {
         "key": "line2",
@@ -26,7 +24,9 @@ exports[`buildPassJson > matches the address snapshot 1`] = `
     ],
     "backFields": [
       {
-        "dataDetectorTypes": [],
+        "dataDetectorTypes": [
+          "PKDataDetectorTypeAddress",
+        ],
         "key": "back_address",
         "label": "Endereço",
         "value": "Rua Augusta, 1500, Apto 42
@@ -40,7 +40,7 @@ Consolação, São Paulo - SP
         "value": "Perto do metrô",
       },
       {
-        "attributedValue": "<a href='https://colinha.app/#c=eyJ2IjoxLCJpZCI6IjAxMjM0NTY3ODlhYmNkZWYwMTIzNDU2Nzg5YWJjZGVmIiwidHlwZSI6ImFkZHJlc3MiLCJjb2xvciI6ImJsdWUiLCJ1cGRhdGVkQXQiOjE3NjI3MzI4MDAwMDAsImNlcCI6IjAxMzEwMTAwIiwibGluZTEiOiJSdWEgQXVndXN0YSwgMTUwMCIsImxpbmUyIjoiQXB0byA0MiIsImRpc3RyaWN0IjoiQ29uc29sYcOnw6NvIiwiY2l0eSI6IlPDo28gUGF1bG8iLCJ1ZiI6IlNQIiwicmVmZXJlbmNlIjoiUGVydG8gZG8gbWV0csO0In0'>Editar este cartão</a>",
+        "attributedValue": "<a href='https://colinha.xyz/#c=eyJ2IjoxLCJpZCI6IjAxMjM0NTY3ODlhYmNkZWYwMTIzNDU2Nzg5YWJjZGVmIiwidHlwZSI6ImFkZHJlc3MiLCJ1cGRhdGVkQXQiOjE3NjI3MzI4MDAwMDAsImNlcCI6IjAxMzEwMTAwIiwibGluZTEiOiJSdWEgQXVndXN0YSwgMTUwMCIsImxpbmUyIjoiQXB0byA0MiIsImRpc3RyaWN0IjoiQ29uc29sYcOnw6NvIiwiY2l0eSI6IlPDo28gUGF1bG8iLCJ1ZiI6IlNQIiwicmVmZXJlbmNlIjoiUGVydG8gZG8gbWV0csO0In0'>Editar este cartão</a>",
         "dataDetectorTypes": [
           "PKDataDetectorTypeLink",
         ],
@@ -70,34 +70,37 @@ Consolação, São Paulo - SP
       },
     ],
   },
-  "labelColor": "rgb(191,207,247)",
-  "logoText": "Endereço",
+  "foregroundColor": "rgb(255,255,255)",
+  "formatVersion": 1,
+  "labelColor": "rgb(191,216,227)",
+  "logoText": "🇧🇷",
   "organizationName": "Colinha",
-  "passTypeIdentifier": "pass.app.colinha.card",
+  "passTypeIdentifier": "pass.xyz.colinha.card",
   "serialNumber": "0123456789abcdef0123456789abcdef",
-  "teamIdentifier": "TEAMID0000",
+  "sharingProhibited": true,
+  "teamIdentifier": "B9Q444Y38B",
 }
 `;
 
 exports[`buildPassJson > matches the docs snapshot 1`] = `
 {
-  "backgroundColor": "rgb(28,28,30)",
+  "backgroundColor": "rgb(0,131,89)",
   "barcodes": [
     {
+      "altText": "529.982.247-25",
       "format": "PKBarcodeFormatCode128",
       "message": "52998224725",
       "messageEncoding": "iso-8859-1",
     },
     {
+      "altText": "529.982.247-25",
       "format": "PKBarcodeFormatQR",
       "message": "52998224725",
       "messageEncoding": "iso-8859-1",
     },
   ],
   "description": "Documentos",
-  "foregroundColor": "rgb(255,255,255)",
-  "formatVersion": 1,
-  "generic": {
+  "eventTicket": {
     "auxiliaryFields": [
       {
         "key": "rg",
@@ -136,7 +139,7 @@ exports[`buildPassJson > matches the docs snapshot 1`] = `
         "value": "FZ123456",
       },
       {
-        "attributedValue": "<a href='https://colinha.app/#c=eyJ2IjoxLCJpZCI6IjAxMjM0NTY3ODlhYmNkZWYwMTIzNDU2Nzg5YWJjZGVmIiwidHlwZSI6ImRvY3MiLCJjb2xvciI6ImdyYXBoaXRlIiwidXBkYXRlZEF0IjoxNzYyNzMyODAwMDAwLCJjcGYiOiI1Mjk5ODIyNDcyNSIsIm5hbWUiOiJBbmEgU291emEiLCJyZyI6IjEyLjM0NS42NzgtOSIsInJubSI6IiIsInBhc3Nwb3J0IjoiRloxMjM0NTYiLCJiYXJjb2RlIjp0cnVlfQ'>Editar este cartão</a>",
+        "attributedValue": "<a href='https://colinha.xyz/#c=eyJ2IjoxLCJpZCI6IjAxMjM0NTY3ODlhYmNkZWYwMTIzNDU2Nzg5YWJjZGVmIiwidHlwZSI6ImRvY3MiLCJ1cGRhdGVkQXQiOjE3NjI3MzI4MDAwMDAsImNwZiI6IjUyOTk4MjI0NzI1IiwibmFtZSI6IkFuYSBTb3V6YSIsInJnIjoiMTIuMzQ1LjY3OC05Iiwicm5tIjoiIiwicGFzc3BvcnQiOiJGWjEyMzQ1NiIsImJhcmNvZGUiOnRydWV9'>Editar este cartão</a>",
         "dataDetectorTypes": [
           "PKDataDetectorTypeLink",
         ],
@@ -166,29 +169,31 @@ exports[`buildPassJson > matches the docs snapshot 1`] = `
       },
     ],
   },
-  "labelColor": "rgb(187,187,188)",
-  "logoText": "Documentos",
+  "foregroundColor": "rgb(255,255,255)",
+  "formatVersion": 1,
+  "labelColor": "rgb(255,255,255)",
+  "logoText": "🇧🇷",
   "organizationName": "Colinha",
-  "passTypeIdentifier": "pass.app.colinha.card",
+  "passTypeIdentifier": "pass.xyz.colinha.card",
   "serialNumber": "0123456789abcdef0123456789abcdef",
-  "teamIdentifier": "TEAMID0000",
+  "sharingProhibited": true,
+  "teamIdentifier": "B9Q444Y38B",
 }
 `;
 
 exports[`buildPassJson > matches the pix snapshot 1`] = `
 {
-  "backgroundColor": "rgb(0,118,140)",
+  "backgroundColor": "rgb(0,128,130)",
   "barcodes": [
     {
+      "altText": "ana@example.com",
       "format": "PKBarcodeFormatQR",
       "message": "00020126370014br.gov.bcb.pix0115ana@example.com5204000053039865802BR5909Ana Souza6009Sao Paulo62070503***63044B14",
       "messageEncoding": "iso-8859-1",
     },
   ],
   "description": "Pix",
-  "foregroundColor": "rgb(255,255,255)",
-  "formatVersion": 1,
-  "generic": {
+  "eventTicket": {
     "auxiliaryFields": [],
     "backFields": [
       {
@@ -216,7 +221,7 @@ exports[`buildPassJson > matches the pix snapshot 1`] = `
         "value": "00020126370014br.gov.bcb.pix0115ana@example.com5204000053039865802BR5909Ana Souza6009Sao Paulo62070503***63044B14",
       },
       {
-        "attributedValue": "<a href='https://colinha.app/#c=eyJ2IjoxLCJpZCI6IjAxMjM0NTY3ODlhYmNkZWYwMTIzNDU2Nzg5YWJjZGVmIiwidHlwZSI6InBpeCIsImNvbG9yIjoidGVhbCIsInVwZGF0ZWRBdCI6MTc2MjczMjgwMDAwMCwia2V5IjoiYW5hQGV4YW1wbGUuY29tIiwia2V5VHlwZSI6ImVtYWlsIiwibmFtZSI6IkFuYSBTb3V6YSIsImNpdHkiOiJTYW8gUGF1bG8ifQ'>Editar este cartão</a>",
+        "attributedValue": "<a href='https://colinha.xyz/#c=eyJ2IjoxLCJpZCI6IjAxMjM0NTY3ODlhYmNkZWYwMTIzNDU2Nzg5YWJjZGVmIiwidHlwZSI6InBpeCIsInVwZGF0ZWRBdCI6MTc2MjczMjgwMDAwMCwia2V5IjoiYW5hQGV4YW1wbGUuY29tIiwia2V5VHlwZSI6ImVtYWlsIiwibmFtZSI6IkFuYSBTb3V6YSIsImNpdHkiOiJTYW8gUGF1bG8ifQ'>Editar este cartão</a>",
         "dataDetectorTypes": [
           "PKDataDetectorTypeLink",
         ],
@@ -246,11 +251,14 @@ exports[`buildPassJson > matches the pix snapshot 1`] = `
       },
     ],
   },
-  "labelColor": "rgb(230,241,244)",
-  "logoText": "Pix",
+  "foregroundColor": "rgb(255,255,255)",
+  "formatVersion": 1,
+  "labelColor": "rgb(255,255,255)",
+  "logoText": "🇧🇷",
   "organizationName": "Colinha",
-  "passTypeIdentifier": "pass.app.colinha.card",
+  "passTypeIdentifier": "pass.xyz.colinha.card",
   "serialNumber": "0123456789abcdef0123456789abcdef",
-  "teamIdentifier": "TEAMID0000",
+  "sharingProhibited": true,
+  "teamIdentifier": "B9Q444Y38B",
 }
 `;

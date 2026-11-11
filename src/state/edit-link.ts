@@ -2,9 +2,8 @@ import { FIELDS } from '../cards/templates';
 import type { Card, CardType } from '../cards/types';
 
 const TYPES: CardType[] = ['docs', 'address', 'pix'];
-const COLORS = ['graphite', 'blue', 'green', 'teal', 'purple', 'orange'];
 const KEY_TYPES = ['cpf', 'cnpj', 'phone', 'email', 'evp'];
-const BASE_KEYS = ['v', 'id', 'type', 'color', 'updatedAt'];
+const BASE_KEYS = ['v', 'id', 'type', 'updatedAt'];
 const EXTRA_KEYS: Record<CardType, string[]> = {
   docs: ['barcode'],
   address: [],
@@ -14,12 +13,12 @@ const MAX_HASH = 4096;
 
 export function parseCard(x: unknown): Card | null {
   if (typeof x !== 'object' || x === null || Array.isArray(x)) return null;
-  const o = x as Record<string, unknown>;
+  // Cards saved before colors were removed carry a `color` key; drop it.
+  const { color: _legacy, ...o } = x as Record<string, unknown>;
   if (o.v !== 1) return null;
   if (typeof o.id !== 'string' || !/^[0-9a-f]{32}$/.test(o.id)) return null;
   if (typeof o.type !== 'string' || !TYPES.includes(o.type as CardType)) return null;
   const type = o.type as CardType;
-  if (typeof o.color !== 'string' || !COLORS.includes(o.color)) return null;
   if (typeof o.updatedAt !== 'number' || !Number.isFinite(o.updatedAt)) return null;
 
   const specs = FIELDS[type];

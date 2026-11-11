@@ -2,11 +2,10 @@
 <script lang="ts">
   import { untrack } from 'svelte';
   import { FIELDS } from '../cards/templates';
-  import type { Card, ColorId, FieldSpec } from '../cards/types';
+  import type { Card, FieldSpec } from '../cards/types';
   import { t } from '../i18n/current';
   import { UFS } from '../lib/br/uf';
   import { detectPixKey, type PixKeyType } from '../lib/pix/key';
-  import ColorSwatches from '../ui/ColorSwatches.svelte';
   import FieldRow from '../ui/FieldRow.svelte';
   import Group from '../ui/Group.svelte';
   import Segmented from '../ui/Segmented.svelte';
@@ -87,15 +86,14 @@
   </Group>
 {/each}
 
-<Group>
-  <ColorSwatches value={card.color} onchange={(c: ColorId) => onpatch({ color: c })} />
-  {#if card.type === 'docs'}
+{#if card.type === 'docs'}
+  <Group>
     <SwitchRow
       label={t('toggle.barcode')}
       checked={card.barcode}
       onchange={(on) => onpatch({ barcode: on })} />
-  {/if}
-</Group>
+  </Group>
+{/if}
 
 <style>
   .choice {

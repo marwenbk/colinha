@@ -185,8 +185,10 @@
     margin-top: var(--s-6);
   }
 
+  /* The live pass at Wallet's proportions, a little smaller than full width. */
   .live {
-    margin: var(--s-2) var(--margin) 0;
+    width: min(78%, 300px);
+    margin: var(--s-2) auto 0;
     transition:
       transform var(--dur-pocket) var(--ease-sheet),
       opacity var(--dur-pocket) var(--ease-sheet);

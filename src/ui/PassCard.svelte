@@ -2,10 +2,17 @@
   import type { PassLayout } from '../cards/types';
   import { barsWidth, stylizedBars } from './bars';
   import { cssVars } from './css-vars';
-  import LogoGlyph from './LogoGlyph.svelte';
+  import PassArt from './PassArt.svelte';
   import Qr from './Qr.svelte';
 
-  let { layout, compact = false }: { layout: PassLayout; compact?: boolean } = $props();
+  // The front of the pass as Wallet draws an event ticket, at Wallet's
+  // proportions: a fixed-size card with the notch at the top; the card's
+  // gradient (the background image) behind everything; the header row with
+  // the flag (Wallet's logo text); the primary field; the secondary and
+  // auxiliary rows; the barcode pinned to the bottom. Sizes are in container
+  // units, so a smaller preview stays true to scale. A `sample` card
+  // (Home's example, nothing saved yet) shows its values a little faded.
+  let { layout, sample = false }: { layout: PassLayout; sample?: boolean } = $props();
 
   const vars = $derived({
     '--pass-bg': layout.colors.bg,
@@ -19,23 +26,16 @@
   const bars = $derived(code128 ? stylizedBars(code128.message) : []);
 </script>
 
-{#if compact}
-  <div class="pass compact" use:cssVars={vars}>
-    <span class="glyph"><LogoGlyph size={22} /></span>
-    <span class="logo-text">{layout.logoText}</span>
-    {#if primary}
-      <span class="strip-value tnum">{primary.value}</span>
-    {/if}
-  </div>
-{:else}
-  <div class="pass" use:cssVars={vars}>
-    <div class="top">
-      <span class="glyph"><LogoGlyph size={24} /></span>
-      <span class="logo-text">{layout.logoText}</span>
+<div class="frame">
+  <div class="pass" class:sample use:cssVars={vars}>
+    <span class="art"><PassArt seed={layout.art} tone={layout.tone} /></span>
+
+    <div class="header">
+      <span class="logo" aria-hidden="true">{layout.logoText}</span>
     </div>
 
     {#if primary}
-      <div class="field primary">
+      <div class="primary">
         <span class="label">{primary.label}</span>
         <span class="value tnum">{primary.value}</span>
       </div>
@@ -63,50 +63,89 @@
             <rect x={b.x} y="0" width={b.w} height="40" fill="#000" />
           {/each}
         </svg>
+        {#if code128.altText}<span class="alt tnum">{code128.altText}</span>{/if}
       </div>
     {:else if qr}
       <div class="code qr">
         <Qr text={qr.message} label={layout.description} />
+        {#if qr.altText}<span class="alt">{qr.altText}</span>{/if}
       </div>
     {/if}
   </div>
-{/if}
+</div>
 
 <style>
-  /* Card: radius 14 and the single card shadow. */
+  /*
+   * The frame is the size container (1cqw is 1% of the card's width) and
+   * carries the card shadow, since the notch mask would cut a box-shadow.
+   */
+  .frame {
+    container-type: inline-size;
+    filter: drop-shadow(0 1px 2px rgb(0 0 0 / 0.1)) drop-shadow(0 10px 24px rgb(0 0 0 / 0.16));
+  }
+
+  /*
+   * Wallet's pass front: 320pt wide by about 416pt tall (1 : 1.3), corner
+   * radius ~10pt, and an event ticket's half-circle notch at the top centre.
+   * Every length below is the 320pt value as cqw (x / 3.2).
+   */
   .pass {
+    position: relative;
+    isolation: isolate;
     display: flex;
     flex-direction: column;
-    gap: var(--s-3);
-    padding: var(--s-4);
-    border-radius: var(--r-card);
+    aspect-ratio: 320 / 416;
+    overflow: hidden;
+    border-radius: 3.4cqw;
     background: var(--pass-bg);
     color: var(--pass-fg);
-    box-shadow:
-      inset 0 0 0 0.5px var(--card-edge),
-      var(--shadow-card);
     font-family: var(--font);
-    transition: background-color var(--dur-micro) ease-out;
+    -webkit-mask: radial-gradient(circle at 50% 0, transparent 4.4cqw, #000 calc(4.4cqw + 0.5px));
+    mask: radial-gradient(circle at 50% 0, transparent 4.4cqw, #000 calc(4.4cqw + 0.5px));
   }
 
-  .top {
+  /* The gradient fills the whole pass, behind everything. */
+  .art {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+  }
+
+  /* Header row: 50pt tall, the logo text 17pt. */
+  .header {
     display: flex;
     align-items: center;
-    gap: var(--s-2);
-  }
-
-  .glyph {
-    display: grid;
     flex: none;
-    color: var(--pass-fg);
+    height: 15.6cqw;
+    padding: 0 3.75cqw;
   }
 
-  .logo-text {
-    font: var(--t-headline);
-    color: var(--pass-fg);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+  .logo {
+    font-size: 6.25cqw;
+    line-height: 1;
+  }
+
+  /* Primary field: its label, then the value at ~32pt. */
+  .primary {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    padding: 2cqw 3.75cqw 0;
+  }
+
+  .primary .value {
+    font-size: 10cqw;
+    font-weight: 400;
+    line-height: 1.1;
+    letter-spacing: -0.01em;
+  }
+
+  /* Secondary and auxiliary rows: labels 12pt, values 16pt. */
+  .fields {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5cqw 6cqw;
+    padding: 3.75cqw 3.75cqw 0;
   }
 
   .field {
@@ -116,66 +155,55 @@
   }
 
   .label {
-    font: var(--t-caption);
+    font-size: 3.75cqw;
+    line-height: 1.3;
     color: var(--pass-label);
   }
 
   .value {
-    font: var(--t-body);
+    font-size: 5cqw;
+    line-height: 1.25;
     color: var(--pass-fg);
     overflow-wrap: anywhere;
   }
 
-  .primary .value {
-    font-size: 1.6471rem; /* ~28pt */
-    font-weight: 600;
-    line-height: 1.2;
-  }
-
-  .fields {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--s-2) var(--s-6);
-  }
-
+  /* The barcode sits at the bottom, centred, in a white box. */
   .code {
     align-self: center;
-    padding: var(--s-2) var(--s-3);
-    border-radius: 8px;
+    margin: auto 0 4.5cqw;
+    padding: 2.5cqw 3.75cqw 1.5cqw;
+    border-radius: 2cqw;
     background: #fff;
   }
 
   .code128 {
-    width: min(100%, 260px);
+    width: 82%;
   }
 
   .code128 svg {
     display: block;
     width: 100%;
-    height: 56px;
+    height: 16cqw;
   }
 
   .qr {
-    width: 132px;
-    padding: var(--s-2);
+    width: 40%;
+    padding: 2.5cqw 2.5cqw 1.5cqw;
   }
 
-  .compact {
-    flex-direction: row;
-    align-items: center;
-    gap: var(--s-2);
-    height: 64px;
-    padding: 0 var(--s-4);
+  .alt {
+    display: block;
+    margin-top: 1cqw;
+    font-size: 3.4cqw;
+    line-height: 1.2;
+    color: #000;
+    text-align: center;
+    overflow-wrap: anywhere;
   }
 
-  .compact .logo-text {
-    flex: 1;
-  }
-
-  .strip-value {
-    flex: none;
-    font: var(--t-headline);
-    color: var(--pass-fg);
-    text-align: end;
+  /* Example values read as examples: a little fainter than real ones. */
+  .sample .value,
+  .sample .alt {
+    opacity: 0.7;
   }
 </style>

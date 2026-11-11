@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const SRC = readFileSync(join(process.cwd(), 'public/sw.js'), 'utf8');
-const ORIGIN = 'https://colinha.app';
+const ORIGIN = 'https://colinha.xyz';
 type Handler = (e: unknown) => void;
 
 function load(stored: Record<string, Response>) {

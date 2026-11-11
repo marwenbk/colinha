@@ -1,8 +1,11 @@
 // The front of a pass as the Editor and Home show it, for complete and partial cards.
-import { colorsOf, f, present, toLayout } from '../cards/layout';
-import { FIELDS, firstInvalid } from '../cards/templates';
-import type { Card, PassLayout } from '../cards/types';
+import { f, FLAG, present, toLayout } from '../cards/layout';
+import { passColors } from '../cards/palette';
+import { seedOf } from '../pass/art';
+import { FIELDS, firstInvalid, newCard } from '../cards/templates';
+import type { Card, CardType, PassLayout } from '../cards/types';
 import type { T } from '../i18n';
+import { SITE_ORIGIN } from '../config';
 import { applyMask } from '../ui/mask';
 
 const maskOf = (type: 'docs' | 'address', id: string) =>
@@ -17,12 +20,13 @@ const HINT = { cpf: '000.000.000-00', cep: '00000-000' } as const;
 /** A complete card gets its real pass layout; a partial one gets what's typed so far. */
 export function previewLayout(card: Card, t: T): PassLayout {
   if (firstInvalid(card) === null) return toLayout(card, t, '');
-  const name = t(`card.${card.type}`);
   const base = {
-    description: name,
-    logoText: name,
+    description: t(`card.${card.type}`),
+    logoText: FLAG,
     back: [],
-    colors: colorsOf(card),
+    colors: passColors(card.type),
+    art: seedOf(card.id),
+    tone: card.type,
   };
   if (card.type === 'docs') {
     return {
@@ -34,7 +38,9 @@ export function previewLayout(card: Card, t: T): PassLayout {
         f('rnm', t('field.rnm'), card.rnm),
         f('passport', t('field.passport'), card.passport),
       ]),
-      barcodes: card.barcode ? [{ format: 'PKBarcodeFormatCode128', message: card.cpf }] : [],
+      barcodes: card.barcode
+        ? [{ format: 'PKBarcodeFormatCode128', message: card.cpf, altText: applyMask(maskOf('docs', 'cpf'), card.cpf) }]
+        : [],
     };
   }
   if (card.type === 'address') {
@@ -56,5 +62,41 @@ export function previewLayout(card: Card, t: T): PassLayout {
     secondary: present([f('name', t('field.name'), card.name)]),
     auxiliary: [],
     barcodes: [],
+  };
+}
+
+/**
+ * The example cards Home shows for a type with nothing saved: every field
+ * filled, so people see what a set-up card looks like. ID numbers are all
+ * zeros in their real formats, so no example pairs a name with what could be
+ * someone's real document. The Pix example's QR holds the site's address,
+ * not a Pix payment: scanning it can never send money to a real key.
+ */
+const EXAMPLE = {
+  name: 'Maria da Silva',
+  docs: { cpf: '00000000000', rg: '00.000.000-0', rnm: 'V000000-0', passport: 'AA000000' },
+  pixKey: 'maria@exemplo.com',
+  address: {
+    cep: '01310100',
+    line1: 'Av. Paulista, 1000',
+    line2: 'Apto 12',
+    district: 'Bela Vista',
+    city: 'São Paulo',
+    uf: 'SP',
+  },
+} as const;
+
+export function sampleLayout(type: CardType, t: T): PassLayout {
+  const base = newCard(type);
+  if (base.type === 'docs') {
+    return previewLayout({ ...base, ...EXAMPLE.docs, name: EXAMPLE.name }, t);
+  }
+  if (base.type === 'address') {
+    return previewLayout({ ...base, ...EXAMPLE.address, reference: '' }, t);
+  }
+  const layout = previewLayout({ ...base, key: EXAMPLE.pixKey, name: EXAMPLE.name, city: EXAMPLE.address.city }, t);
+  return {
+    ...layout,
+    barcodes: [{ format: 'PKBarcodeFormatQR', message: SITE_ORIGIN, altText: EXAMPLE.pixKey }],
   };
 }

@@ -13,8 +13,8 @@ const files = () => ({
 it('unzips to exactly the pass files', () => {
   const out = unzipSync(zipPass(files()));
   expect(Object.keys(out).sort()).toEqual(
-    ['icon.png', 'icon@2x.png', 'icon@3x.png', 'logo.png', 'logo@2x.png', 'logo@3x.png',
-      'manifest.json', 'pass.json', 'signature'],
+    ['background.png', 'background@2x.png', 'background@3x.png', 'icon.png', 'icon@2x.png',
+      'icon@3x.png', 'manifest.json', 'pass.json', 'signature'],
   );
   // Array.from: jsdom and node hand out Uint8Arrays from different realms.
   for (const [k, v] of Object.entries(files())) expect(Array.from(out[k])).toEqual(Array.from(v));
@@ -39,7 +39,7 @@ it('stores PNGs and deflates JSON', () => {
     at += 30 + nameLen + extraLen + size;
   }
   expect(methods['icon.png']).toBe(0);
-  expect(methods['logo@3x.png']).toBe(0);
+  expect(methods['background@3x.png']).toBe(0);
   expect(methods['pass.json']).toBe(8);
   expect(methods['manifest.json']).toBe(8);
 });

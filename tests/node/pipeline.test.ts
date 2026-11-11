@@ -39,7 +39,7 @@ const dir = mkdtempSync(join(tmpdir(), 'colinha-pipeline-'));
 afterAll(() => rmSync(dir, { recursive: true, force: true }));
 
 const card: DocsCard = {
-  v: 1, id: '0123456789abcdef0123456789abcdef', type: 'docs', color: 'graphite',
+  v: 1, id: '0123456789abcdef0123456789abcdef', type: 'docs',
   updatedAt: 1762732800000, cpf: '52998224725', name: 'Ana Souza', rg: '', rnm: '',
   passport: '', barcode: true,
 };
@@ -51,7 +51,7 @@ async function build() {
     return new Response(await signDetached(digest, { key, cert: leafDer, chain: [caDer] }, new Date()));
   }) as typeof fetch;
   const loader = async (p: string) => new Uint8Array(readFileSync(join(root, 'public', p)));
-  return buildPkpass(card, createT('pt'), 'https://colinha.app', { fetch: signer, loader });
+  return buildPkpass(card, createT('pt'), 'https://colinha.xyz', { fetch: signer, loader });
 }
 
 test('buildPkpass produces a typed blob with the pass files', async () => {
@@ -59,12 +59,12 @@ test('buildPkpass produces a typed blob with the pass files', async () => {
   expect(blob.type).toBe('application/vnd.apple.pkpass');
   const files = unzipSync(new Uint8Array(await blob.arrayBuffer()));
   expect(Object.keys(files).sort()).toEqual([
-    'icon.png', 'icon@2x.png', 'icon@3x.png', 'logo.png', 'logo@2x.png', 'logo@3x.png',
-    'manifest.json', 'pass.json', 'signature',
+    'background.png', 'background@2x.png', 'background@3x.png', 'icon.png', 'icon@2x.png',
+    'icon@3x.png', 'manifest.json', 'pass.json', 'signature',
   ]);
   const pass = JSON.parse(new TextDecoder().decode(files['pass.json']));
   expect(pass.serialNumber).toBe(card.id);
-  expect(pass.generic.primaryFields[0].value).toBe('529.982.247-25');
+  expect(pass.eventTicket.primaryFields[0].value).toBe('529.982.247-25');
 });
 
 test.skipIf(!openssl)(`verify-pass.sh accepts the pass (${openssl})`, async () => {

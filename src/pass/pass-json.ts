@@ -1,4 +1,6 @@
-// Turns a PassLayout into Apple's pass.json (generic style).
+// Turns a PassLayout into Apple's pass.json (event ticket style: the only
+// style whose background image covers the whole pass, so the card's
+// gradient fills it).
 import type { PassField, PassLayout } from '../cards/types';
 import { ORG_NAME, PASS_TYPE_ID, TEAM_ID } from '../config';
 
@@ -21,6 +23,7 @@ function field(f: PassField, onBack: boolean): Record<string, unknown> {
   const out: Record<string, unknown> = { key: f.key, label: f.label, value: f.value };
   // Data detectors only run on back fields.
   if (onBack && f.detect === false) out.dataDetectorTypes = [];
+  if (onBack && f.detect === 'address') out.dataDetectorTypes = ['PKDataDetectorTypeAddress'];
   return out;
 }
 
@@ -34,10 +37,12 @@ export function buildPassJson(layout: PassLayout, serial: string): Record<string
     serialNumber: serial,
     description: layout.description,
     logoText: layout.logoText,
+    // The pass holds personal data: Wallet hides its Share button.
+    sharingProhibited: true,
     backgroundColor: layout.colors.bg,
     foregroundColor: layout.colors.fg,
     labelColor: layout.colors.label,
-    generic: {
+    eventTicket: {
       primaryFields: front(layout.primary),
       secondaryFields: front(layout.secondary),
       auxiliaryFields: front(layout.auxiliary),
@@ -45,6 +50,10 @@ export function buildPassJson(layout: PassLayout, serial: string): Record<string
     },
   };
   if (layout.barcodes.length > 0)
-    json.barcodes = layout.barcodes.map((b) => ({ ...b, messageEncoding: 'iso-8859-1' }));
+    json.barcodes = layout.barcodes.map(({ altText, ...b }) => ({
+      ...b,
+      messageEncoding: 'iso-8859-1',
+      ...(altText ? { altText } : {}),
+    }));
   return json;
 }

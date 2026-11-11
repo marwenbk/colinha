@@ -25,11 +25,11 @@ import Editor from '../../../src/screens/Editor.svelte';
 import { cards } from '../../../src/state/cards.svelte';
 
 const card: Card = {
-  v: 1, id: 'a'.repeat(32), type: 'docs', color: 'graphite', updatedAt: 1,
+  v: 1, id: 'a'.repeat(32), type: 'docs', updatedAt: 1,
   cpf: '52998224725', name: 'Ana Souza', rg: '', rnm: '', passport: '', barcode: true,
 };
 const env = { platform: 'ios' as const, inApp: null };
-const badge = () => screen.getByRole('button', { name: 'Add to Apple Wallet' });
+const badge = () => screen.getByRole('button', { name: 'Add to wallet' });
 const settle = async () => {
   for (let i = 0; i < 10; i++) await Promise.resolve();
 };

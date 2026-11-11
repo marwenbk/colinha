@@ -20,9 +20,6 @@ const jobs = [
   ['public/pass/icon.png', icon, 29],
   ['public/pass/icon@2x.png', icon, 58],
   ['public/pass/icon@3x.png', icon, 87],
-  ['public/pass/logo.png', logo, 50],
-  ['public/pass/logo@2x.png', logo, 100],
-  ['public/pass/logo@3x.png', logo, 150],
   ['public/apple-touch-icon.png', icon, 180],
 ];
 for (const [out, svg, size] of jobs) {

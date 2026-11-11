@@ -1,7 +1,7 @@
-// The six pass images, loaded once from /pass/ and kept in memory.
-
+// The pass icons, loaded once from /pass/ and kept in memory. The background
+// is drawn per card (see background.ts).
 export const PASS_IMAGES = [
-  'icon.png', 'icon@2x.png', 'icon@3x.png', 'logo.png', 'logo@2x.png', 'logo@3x.png',
+  'icon.png', 'icon@2x.png', 'icon@3x.png',
 ] as const;
 
 export type ImageLoader = (path: string) => Promise<Uint8Array>;

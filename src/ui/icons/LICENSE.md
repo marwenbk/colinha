@@ -1,6 +1,6 @@
 # Icon licenses
 
-The icons in this folder (`X`, `Plus`, `Lock`, `Check`, `ChevronDown`, `Copy`, `Smartphone`, `Trash`) are copied from [Lucide](https://lucide.dev) and wrapped as Svelte components.
+The icons in this folder (`X`, `Lock`, `Check`, `ChevronDown`, `Copy`, `Smartphone`, `Trash`) are copied from [Lucide](https://lucide.dev) and wrapped as Svelte components.
 
 ISC License
 

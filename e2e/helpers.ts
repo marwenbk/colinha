@@ -30,7 +30,7 @@ function opensslEnv(): NodeJS.ProcessEnv {
 
 export type PassJson = {
   serialNumber: string;
-  generic: Record<string, { key: string; value: string }[]>;
+  eventTicket: Record<string, { key: string; value: string }[]>;
   [k: string]: unknown;
 };
 
@@ -108,7 +108,7 @@ export function docsCard(n = 1, over: Partial<Card> = {}): Card {
     v: 1,
     id: hex(n),
     type: 'docs',
-    color: 'graphite',
+   
     updatedAt: 1_700_000_000_000 + n,
     cpf: '52998224725',
     name: 'Ana Souza',
@@ -125,7 +125,7 @@ export function pixCard(n = 2, over: Partial<Card> = {}): Card {
     v: 1,
     id: hex(n),
     type: 'pix',
-    color: 'teal',
+   
     updatedAt: 1_700_000_000_000 + n,
     key: 'ana@exemplo.com',
     keyType: 'email',
@@ -136,8 +136,26 @@ export function pixCard(n = 2, over: Partial<Card> = {}): Card {
 }
 
 export const badge = (page: Page) =>
-  page.getByRole('button', { name: 'Adicionar à Carteira Apple' });
+  page.getByRole('button', { name: pt['action.addToWallet'] });
 
 export async function expectEditorClosed(page: Page): Promise<void> {
   await expect(page.getByRole('dialog')).toHaveCount(0);
+}
+
+/** The Home carousel card of a type (its accessible name starts with the type). */
+export const homeCard = (page: Page, type: 'docs' | 'pix' | 'address') =>
+  page.getByRole('button', { name: new RegExp(`^${pt[`card.${type}`]}`) });
+
+/**
+ * Opens the Pix or Address card from Home: a tap on the card peeking at the
+ * side slides it to the middle, and a second tap, once it is there, opens it.
+ */
+export async function openFromHome(page: Page, type: 'pix' | 'address') {
+  const name = pt[`card.${type}`];
+  const button = homeCard(page, type);
+  const dialog = page.getByRole('dialog', { name });
+  await expect(async () => {
+    await button.click({ timeout: 1000 });
+    await expect(dialog).toBeVisible({ timeout: 1000 });
+  }).toPass();
 }

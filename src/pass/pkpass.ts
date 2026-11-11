@@ -7,6 +7,7 @@ import { type ImageLoader, loadPassImages } from './assets';
 import { buildManifest } from './manifest';
 import { buildPassJson } from './pass-json';
 import { requestSignature } from './sign-client';
+import { backgroundImages } from './background';
 import { zipPass } from './zip';
 
 export const PKPASS_TYPE = 'application/vnd.apple.pkpass';
@@ -29,6 +30,7 @@ export async function buildPkpass(
   const files: Record<string, Uint8Array> = {
     'pass.json': new TextEncoder().encode(JSON.stringify(buildPassJson(layout, card.id))),
     ...(await loadPassImages(deps.loader)),
+    ...backgroundImages(layout.art, layout.tone),
   };
   const manifest = await buildManifest(files);
   const signature = await requestSignature(manifest, deps.fetch);

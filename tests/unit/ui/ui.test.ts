@@ -10,7 +10,7 @@ import PassCard from '../../../src/ui/PassCard.svelte';
 import Segmented from '../../../src/ui/Segmented.svelte';
 import SheetHarness from './SheetHarness.svelte';
 import ToastHarness from './ToastHarness.svelte';
-import WalletBadge from '../../../src/ui/WalletBadge.svelte';
+import WalletButton from '../../../src/ui/WalletButton.svelte';
 
 afterEach(() => cleanup());
 
@@ -76,11 +76,11 @@ describe('Toast', () => {
   });
 });
 
-describe('WalletBadge', () => {
+describe('WalletButton', () => {
   it('marks the button busy and ignores taps while busy', async () => {
     const onclick = vi.fn();
-    render(WalletBadge, { locale: 'en', busy: true, onclick });
-    const button = screen.getByRole('button', { name: 'Add to Apple Wallet' });
+    render(WalletButton, { busy: true, onclick });
+    const button = screen.getByRole('button', { name: 'Add to wallet' });
     expect(button.getAttribute('aria-busy')).toBe('true');
     expect(screen.getByRole('progressbar').hasAttribute('aria-label')).toBe(false);
     await fireEvent.click(button);
@@ -108,12 +108,14 @@ describe('Segmented', () => {
 describe('PassCard', () => {
   const layout: PassLayout = {
     description: 'Documents',
-    logoText: 'Documents',
+    logoText: '🇧🇷',
+    tone: 'docs',
     primary: [{ key: 'cpf', label: 'CPF', value: '529.982.247-25' }],
     secondary: [{ key: 'name', label: 'Name', value: 'Ana Souza' }],
     auxiliary: [{ key: 'rnm', label: 'RNM', value: 'V123456-7' }],
     back: [],
     colors: { bg: 'rgb(28,28,30)', fg: 'rgb(255,255,255)', label: 'rgb(187,187,188)' },
+    art: 1,
     barcodes: [
       { format: 'PKBarcodeFormatCode128', message: '52998224725' },
       { format: 'PKBarcodeFormatQR', message: '52998224725' },
@@ -126,10 +128,11 @@ describe('PassCard', () => {
     expect(screen.getByText('Ana Souza')).toBeTruthy();
   });
 
-  it('renders the primary value in the compact strip', () => {
-    render(PassCard, { layout, compact: true });
-    expect(screen.getByText('529.982.247-25')).toBeTruthy();
-    expect(screen.queryByText('Ana Souza')).toBeNull();
+  it('shows the flag, the gradient behind the whole card, the number, and no title', () => {
+    const { container } = render(PassCard, { layout });
+    expect(screen.queryByText('Documents')).toBeNull();
+    expect(container.querySelector('.pass > .art canvas')).toBeTruthy();
+    expect(container.querySelector('.primary')!.textContent).toContain('529.982.247-25');
   });
 
   it('sets the pass colors through custom properties', () => {

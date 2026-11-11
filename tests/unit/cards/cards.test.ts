@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { createT } from '../../../src/i18n';
 import { toLayout } from '../../../src/cards/layout';
-import { PALETTE, contrast } from '../../../src/cards/palette';
+import { contrast, passColors } from '../../../src/cards/palette';
 import { FIELDS, firstInvalid, newCard } from '../../../src/cards/templates';
 import type { AddressCard, Card, DocsCard, PixCard } from '../../../src/cards/types';
 import { buildPixPayload } from '../../../src/lib/pix/brcode';
@@ -34,11 +34,11 @@ describe('docs layout', () => {
     expect(l.secondary).toMatchObject([{ key: 'name', value: 'Ana Souza' }]);
     expect(l.auxiliary.map((f) => f.key)).toEqual(['rg', 'rnm', 'passport']);
     expect(l.barcodes).toEqual([
-      { format: 'PKBarcodeFormatCode128', message: '52998224725' },
-      { format: 'PKBarcodeFormatQR', message: '52998224725' },
+      { format: 'PKBarcodeFormatCode128', message: '52998224725', altText: '529.982.247-25' },
+      { format: 'PKBarcodeFormatQR', message: '52998224725', altText: '529.982.247-25' },
     ]);
     expect(l.description).toBe('Documentos');
-    expect(l.logoText).toBe('Documentos');
+    expect(l.logoText).toBe('\u{1F1E7}\u{1F1F7}');
     expect(l.colors.fg).toBe('rgb(255,255,255)');
   });
   it('skips empty aux fields and barcode off', () => {
@@ -77,7 +77,9 @@ describe('pix layout', () => {
     const c = pix();
     const l = toLayout(c, t, URL);
     const payload = buildPixPayload({ key: c.key, name: c.name, city: c.city });
-    expect(l.barcodes).toEqual([{ format: 'PKBarcodeFormatQR', message: payload }]);
+    expect(l.barcodes).toEqual([
+      { format: 'PKBarcodeFormatQR', message: payload, altText: expect.any(String) },
+    ]);
     const cp = l.back.find((f) => f.key === 'back_copyPaste')!;
     expect(cp.detect).toBe(false);
     expect(cp.value).toBe(payload);
@@ -121,9 +123,10 @@ describe('firstInvalid', () => {
 
 describe('newCard', () => {
   it('has defaults', () => {
-    expect(newCard('docs')).toMatchObject({ color: 'graphite', barcode: true, v: 1 });
-    expect(newCard('address').color).toBe('blue');
-    expect(newCard('pix')).toMatchObject({ color: 'teal', keyType: null });
+    expect(newCard('docs')).toMatchObject({ barcode: true, v: 1 });
+    expect(newCard('pix')).toMatchObject({ keyType: null });
+    for (const type of ['docs', 'address', 'pix'] as const)
+      expect(newCard(type)).not.toHaveProperty('color');
   });
   it('prefills pix', () => {
     const a = newCard('pix', { name: 'Ana Souza', city: 'São Paulo' }) as PixCard;
@@ -135,15 +138,13 @@ describe('newCard', () => {
 });
 
 describe('limits', () => {
-  it('respects Apple generic limits', () => {
+  it('respects Apple store card limits', () => {
     const cards: Card[] = [docs(), docs({ barcode: false }), addr(), pix()];
     for (const c of cards) {
       const l = toLayout(c, t, URL);
       expect(l.primary).toHaveLength(1);
-      expect(l.secondary.length).toBeLessThanOrEqual(4);
-      expect(l.auxiliary.length).toBeLessThanOrEqual(4);
-      if (l.barcodes.some((b) => b.format === 'PKBarcodeFormatQR'))
-        expect(l.secondary.length + l.auxiliary.length).toBeLessThanOrEqual(4);
+      // Store cards: up to 4 secondary and auxiliary fields combined.
+      expect(l.secondary.length + l.auxiliary.length).toBeLessThanOrEqual(4);
     }
   });
   it('FIELDS ids exist on cards', () => {
@@ -154,15 +155,19 @@ describe('limits', () => {
   });
 });
 
-describe('palette', () => {
-  it('has contrast of at least 4.5 for bg/white and bg/label', () => {
-    for (const { bg, label } of Object.values(PALETTE)) {
+describe('pass colors', () => {
+  it('give white text and labels at least 4.5:1 on every card type', () => {
+    for (const tone of ['docs', 'pix', 'address'] as const) {
+      const { bg, fg, label } = passColors(tone);
+      expect(fg).toBe('rgb(255,255,255)');
       expect(contrast(rgbOf(bg), [255, 255, 255])).toBeGreaterThanOrEqual(4.5);
       expect(contrast(rgbOf(bg), rgbOf(label))).toBeGreaterThanOrEqual(4.5);
     }
   });
-  it('uses rgb strings', () => {
-    expect(PALETTE.graphite.bg).toBe('rgb(28,28,30)');
+  it('differ by card type', () => {
+    expect(passColors('docs').bg).not.toBe(passColors('pix').bg);
+    expect(passColors('address').bg).not.toBe(passColors('docs').bg);
+    expect(toLayout(docs(), t, URL).colors).toEqual(passColors('docs'));
   });
 });
 

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { decodeEditLink, encodeEditLink, parseCard } from '../../../src/state/edit-link';
 import type { Card } from '../../../src/cards/types';
 
-const base = { v: 1 as const, id: 'a'.repeat(32), color: 'blue' as const, updatedAt: 1700000000000 };
+const base = { v: 1 as const, id: 'a'.repeat(32), updatedAt: 1700000000000 };
 const samples: Card[] = [
   { ...base, type: 'docs', cpf: '52998224725', name: 'Conceição', rg: '1', rnm: '', passport: '', barcode: true },
   { ...base, type: 'address', cep: '01310100', line1: 'Av Paulista 1', line2: '', district: 'Bela Vista',
@@ -41,9 +41,11 @@ describe('edit link', () => {
 });
 
 describe('parseCard', () => {
-  it('rejects bad type, color, long strings, bad types of fields', () => {
+  it('drops the legacy color key', () => {
+    expect(parseCard({ ...samples[0], color: 'blue' })).toEqual(samples[0]);
+  });
+  it('rejects bad type, long strings, bad types of fields', () => {
     expect(parseCard({ ...samples[0], type: 'zzz' })).toBeNull();
-    expect(parseCard({ ...samples[0], color: 'pink' })).toBeNull();
     expect(parseCard({ ...samples[0], name: 'x'.repeat(41) })).toBeNull();
     expect(parseCard({ ...samples[0], barcode: 'yes' })).toBeNull();
     expect(parseCard({ ...samples[0], updatedAt: NaN })).toBeNull();

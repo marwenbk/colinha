@@ -4,7 +4,9 @@ import {
   badge,
   docsCard,
   expectEditorClosed,
+  homeCard,
   lastPass,
+  openFromHome,
   pixCard,
   pt,
   seedCards,
@@ -50,8 +52,8 @@ test('creates a Docs card: the pass unzips, has the CPF and its signature verifi
   await expect(editor.locator('.pass').first()).toContainText('529.982.247-25');
   await badge(page).click();
   const pass = await lastPass(page);
-  expect(pass.generic.primaryFields[0].value).toBe('529.982.247-25');
-  expect(pass.generic.auxiliaryFields.map((f) => f.value)).toContain(
+  expect(pass.eventTicket.primaryFields[0].value).toBe('529.982.247-25');
+  expect(pass.eventTicket.auxiliaryFields.map((f) => f.value)).toContain(
     'V123456-7',
   );
   await expectEditorClosed(page);
@@ -134,9 +136,7 @@ test('an ambiguous Pix key blocks Add until a segment is picked', async ({
   page,
 }) => {
   await page.goto('/');
-  await page
-    .getByRole('button', { name: new RegExp(`^${pt['card.pix']}`) })
-    .click();
+  await openFromHome(page, 'pix');
   await page
     .getByLabel(pt['field.pixKey'], { exact: true })
     .fill('11912345684');
@@ -160,13 +160,14 @@ test('an ambiguous Pix key blocks Add until a segment is picked', async ({
   await choice.getByRole('radio', { name: pt['pixType.phone'] }).click();
   await badge(page).click();
   const pass = await lastPass(page);
-  expect(pass.generic.primaryFields[0].value).toBe('(11) 91234-5684');
+  expect(pass.eventTicket.primaryFields[0].value).toBe('(11) 91234-5684');
 });
 
 test('Delete asks first, then removes the card; Erase everything empties the list and the pass cache', async ({
   page,
 }) => {
   await seedCards(page, [docsCard(1), pixCard(2)]);
+  // Home is the CPF card; one tap edits it.
   await page.getByRole('button', { name: /529\.982\.247-25/ }).click();
   await page.getByRole('button', { name: pt['action.delete'] }).click();
   const confirm = page.getByRole('dialog', { name: pt['confirm.delete'] });
@@ -199,37 +200,33 @@ test('Delete asks first, then removes the card; Erase everything empties the lis
     .toBe(false);
 });
 
-test('(+) opens the type picker and a second Pix card sits alongside the first', async ({
+test('Home opens on CPF; a side card slides in on the first tap and opens on the second', async ({
   page,
 }) => {
-  await seedCards(page, [pixCard(2)]);
-  await page.getByRole('button', { name: pt['a11y.newCard'] }).click();
-  const picker = page.getByRole('dialog', { name: pt['a11y.newCard'] });
-  for (const k of ['card.docs', 'card.address', 'card.pix'] as const)
-    await expect(
-      picker.getByRole('button', { name: pt[k], exact: true }),
-    ).toBeVisible();
-  await picker
-    .getByRole('button', { name: pt['card.pix'], exact: true })
-    .click();
-  const editor = page.getByRole('dialog', { name: pt['card.pix'] });
-  await expect(editor).toBeVisible();
-  await page
-    .getByLabel(pt['field.pixKey'], { exact: true })
-    .fill('bia@exemplo.com');
-  // Name and city were prefilled? No Docs/Address cards here, so fill them.
-  await page.getByLabel(pt['field.name'], { exact: true }).fill('Bia Lima');
-  await page.getByLabel(pt['field.city'], { exact: true }).fill('Recife');
-  await expect(editor.getByText(pt['pixType.email'])).toBeVisible();
-  await badge(page).click();
-  await lastPass(page);
+  await seedCards(page, [docsCard(1), pixCard(2)]);
+  const pix = page.getByRole('dialog', { name: pt['card.pix'] });
+
+  // The first tap on the Pix card's visible sliver (it peeks on the left)
+  // only slides it in. Tap the sliver itself, as a person would: a locator
+  // click would scroll the card into view first.
+  const box = (await homeCard(page, 'pix').boundingBox())!;
+  expect(box.x + box.width).toBeGreaterThan(8);
+  await page.mouse.click(box.x + box.width - 6, box.y + box.height / 2);
+  await page.waitForTimeout(600);
+  await expect(pix).toBeHidden();
+
+  // Now in the middle, the Pix card opens with its key.
+  await homeCard(page, 'pix').click();
+  await expect(pix).toBeVisible();
+  await expect(page.getByLabel(pt['field.pixKey'], { exact: true })).toHaveValue(
+    'ana@exemplo.com',
+  );
+  await pix.getByRole('button', { name: pt['a11y.close'] }).click();
   await expectEditorClosed(page);
-  await expect(
-    page.getByRole('button', { name: /ana@exemplo\.com/ }),
-  ).toBeVisible();
-  await expect(
-    page.getByRole('button', { name: /bia@exemplo\.com/ }),
-  ).toBeVisible();
+
+  // No Address card yet: its example starts one.
+  await openFromHome(page, 'address');
+  await expect(page.getByLabel(pt['field.cep'], { exact: true })).toHaveValue('');
 });
 
 test.describe('sign errors', () => {
@@ -266,7 +263,7 @@ test.describe('sign errors', () => {
     await page.unroute('**/api/sign');
     await badge(page).click();
     const pass = await lastPass(page);
-    expect(pass.generic.primaryFields[0].value).toBe('529.982.247-25');
+    expect(pass.eventTicket.primaryFields[0].value).toBe('529.982.247-25');
   });
 });
 

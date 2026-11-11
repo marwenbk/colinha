@@ -8,7 +8,7 @@ import { encodeEditLink } from '../../../src/state/edit-link';
 import { SERIAL, addressCard, docsCard, pixCard } from './fixtures';
 
 const t = createT('pt');
-const ORIGIN = 'https://colinha.app';
+const ORIGIN = 'https://colinha.xyz';
 type Field = Record<string, unknown>;
 type Generic = Record<'primaryFields' | 'secondaryFields' | 'auxiliaryFields' | 'backFields', Field[]>;
 
@@ -29,15 +29,33 @@ describe('buildPassJson', () => {
       organizationName: ORG_NAME,
       serialNumber: SERIAL,
       description: 'Documentos',
-      logoText: 'Documentos',
-      backgroundColor: 'rgb(28,28,30)',
       foregroundColor: 'rgb(255,255,255)',
     });
+    expect(json.backgroundColor).toMatch(/^rgb\(\d+,\d+,\d+\)$/);
     expect(json.labelColor).toMatch(/^rgb\(\d+,\d+,\d+\)$/);
+    expect(json).not.toHaveProperty('generic');
+    expect(json).toHaveProperty('eventTicket');
+  });
+
+  it('uses Wallet features: flag logo, no sharing, barcode alt text, tappable address', () => {
+    const docs = buildPassJson(toLayout(docsCard, t, 'https://x.test/'), SERIAL);
+    expect(docs.logoText).toBe('\u{1F1E7}\u{1F1F7}');
+    expect(docs.sharingProhibited).toBe(true);
+    expect(docs.barcodes).toEqual([
+      expect.objectContaining({ format: 'PKBarcodeFormatCode128', altText: '529.982.247-25' }),
+      expect.objectContaining({ format: 'PKBarcodeFormatQR', altText: '529.982.247-25' }),
+    ]);
+    const pix = buildPassJson(toLayout(pixCard, t, 'https://x.test/'), SERIAL);
+    expect((pix.barcodes as Field[])[0].altText).toBe('ana@example.com');
+    const addr = buildPassJson(toLayout(addressCard, t, 'https://x.test/'), SERIAL)
+      .eventTicket as Generic;
+    expect(addr.backFields.find((f) => f.key === 'back_address')!.dataDetectorTypes).toEqual([
+      'PKDataDetectorTypeAddress',
+    ]);
   });
 
   it('turns off data detectors on back fields only', () => {
-    const g = buildPassJson(toLayout(docsCard, t, 'https://x.test/'), SERIAL).generic as Generic;
+    const g = buildPassJson(toLayout(docsCard, t, 'https://x.test/'), SERIAL).eventTicket as Generic;
     expect(g.primaryFields[0]).toEqual({ key: 'cpf', label: 'CPF', value: '529.982.247-25' });
     const cpf = g.backFields.find((f) => f.key === 'back_cpf')!;
     expect(cpf.dataDetectorTypes).toEqual([]);
@@ -46,7 +64,7 @@ describe('buildPassJson', () => {
 
   it('renders the edit link as a link field', () => {
     const url = encodeEditLink(docsCard, ORIGIN);
-    const g = buildPassJson(toLayout(docsCard, t, url), SERIAL).generic as Generic;
+    const g = buildPassJson(toLayout(docsCard, t, url), SERIAL).eventTicket as Generic;
     const edit = g.backFields.find((f) => f.key === 'edit')!;
     expect(edit).toEqual({
       key: 'edit',
@@ -62,7 +80,7 @@ describe('buildPassJson', () => {
       ...toLayout(docsCard, t, 'x'),
       back: [{ key: 'edit', label: '', value: '', link: { href: "https://x.test/?a='b'<c>&d", text: 'Go <now> & \'then\'' } }],
     };
-    const g = buildPassJson(layout, SERIAL).generic as Generic;
+    const g = buildPassJson(layout, SERIAL).eventTicket as Generic;
     expect(g.backFields[0].attributedValue).toBe(
       "<a href='https://x.test/?a=&#39;b&#39;&lt;c&gt;&amp;d'>Go &lt;now&gt; &amp; &#39;then&#39;</a>",
     );
@@ -72,8 +90,8 @@ describe('buildPassJson', () => {
   it('adds iso-8859-1 barcodes, and none when the layout has none', () => {
     const json = buildPassJson(toLayout(docsCard, t, 'x'), SERIAL);
     expect(json.barcodes).toEqual([
-      { format: 'PKBarcodeFormatCode128', message: '52998224725', messageEncoding: 'iso-8859-1' },
-      { format: 'PKBarcodeFormatQR', message: '52998224725', messageEncoding: 'iso-8859-1' },
+      { format: 'PKBarcodeFormatCode128', message: '52998224725', messageEncoding: 'iso-8859-1', altText: '529.982.247-25' },
+      { format: 'PKBarcodeFormatQR', message: '52998224725', messageEncoding: 'iso-8859-1', altText: '529.982.247-25' },
     ]);
     const none = buildPassJson(toLayout({ ...docsCard, barcode: false }, t, 'x'), SERIAL);
     expect(none).not.toHaveProperty('barcodes');

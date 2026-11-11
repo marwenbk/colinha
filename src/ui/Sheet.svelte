@@ -260,6 +260,15 @@
     max-width: 640px;
     border-radius: var(--r-page) var(--r-page) 0 0;
     background: var(--bg);
+    /* A hairline edge, so the sheet stands apart from the page (both black in dark mode). */
+    box-shadow:
+      0 0 0 0.5px var(--card-edge),
+      0 -8px 32px rgb(0 0 0 / 0.35);
+  }
+
+  /* Behind a page sheet the app is dimmed, as iOS does, not just shrunk. */
+  .page .backdrop {
+    background: rgb(0 0 0 / 0.55);
   }
 
   /* Floating sheet: glass, inset 8pt, radius 32. */

@@ -28,7 +28,7 @@
     },
     "production": {
       "workers_dev": false,
-      "routes": [{ "pattern": "colinha.app", "custom_domain": true }],
+      "routes": [{ "pattern": "colinha.xyz", "custom_domain": true }],
       "ratelimits": [
         {
           "name": "SIGN_LIMITER",

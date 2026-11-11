@@ -5,7 +5,8 @@ import { formatCpf } from '../lib/br/cpf';
 import { formatBrMobile } from '../lib/br/phone';
 import { buildPixPayload } from '../lib/pix/brcode';
 import type { PixKeyType } from '../lib/pix/key';
-import { PALETTE } from './palette';
+import { seedOf } from '../pass/art';
+import { passColors } from './palette';
 import { firstInvalid } from './templates';
 import type { AddressCard, Card, DocsCard, PassField, PassLayout, PixCard } from './types';
 
@@ -13,6 +14,8 @@ export const f = (key: string, label: string, value: string): PassField => ({ ke
 const back = (key: string, label: string, value: string): PassField => ({
   key: `back_${key}`, label, value, detect: false,
 });
+/** The flag is the system emoji, so Wallet draws it as iOS does; we never redraw it. */
+export const FLAG = '\u{1F1E7}\u{1F1F7}';
 export const present = (fields: PassField[]) => fields.filter((x) => x.value !== '');
 
 function formatPixKey(type: PixKeyType, v: string): string {
@@ -50,8 +53,8 @@ function docs(c: DocsCard, t: T) {
     ]),
     barcodes: c.barcode
       ? [
-          { format: 'PKBarcodeFormatCode128' as const, message: c.cpf },
-          { format: 'PKBarcodeFormatQR' as const, message: c.cpf },
+          { format: 'PKBarcodeFormatCode128' as const, message: c.cpf, altText: cpf },
+          { format: 'PKBarcodeFormatQR' as const, message: c.cpf, altText: cpf },
         ]
       : [],
   };
@@ -67,7 +70,7 @@ function address(c: AddressCard, t: T) {
       f('cityUf', t('field.city'), `${c.city} - ${c.uf}`),
     ]),
     back: present([
-      back('address', t('card.address'), addressBlock(c)),
+      { ...back('address', t('card.address'), addressBlock(c)), detect: 'address' as const },
       back('reference', t('field.reference'), c.reference),
     ]),
     barcodes: [],
@@ -76,24 +79,21 @@ function address(c: AddressCard, t: T) {
 
 function pix(c: PixCard, t: T) {
   const payload = buildPixPayload({ key: c.key, name: c.name, city: c.city });
+  const key = formatPixKey(c.keyType!, c.key);
   return {
-    primary: [f('key', t('field.pixKey'), formatPixKey(c.keyType!, c.key))],
+    primary: [f('key', t('field.pixKey'), key)],
     secondary: [f('name', t('field.name'), c.name)],
     auxiliary: [],
     back: present([
-      back('key', t('field.pixKey'), formatPixKey(c.keyType!, c.key)),
+      back('key', t('field.pixKey'), key),
       back('name', t('field.name'), c.name),
       back('city', t('field.city'), c.city),
       back('copyPaste', t('pass.copyPaste'), payload),
     ]),
-    barcodes: [{ format: 'PKBarcodeFormatQR' as const, message: payload }],
+    barcodes: [{ format: 'PKBarcodeFormatQR' as const, message: payload, altText: key }],
   };
 }
 
-export const colorsOf = (card: Card) => {
-  const p = PALETTE[card.color];
-  return { bg: p.bg, fg: 'rgb(255,255,255)', label: p.label };
-};
 
 /** Assumes firstInvalid(card) === null; throws otherwise. */
 export function toLayout(card: Card, t: T, editUrl: string): PassLayout {
@@ -101,16 +101,17 @@ export function toLayout(card: Card, t: T, editUrl: string): PassLayout {
   if (bad !== null) throw new Error(`Invalid card: ${bad}`);
   const body =
     card.type === 'docs' ? docs(card, t) : card.type === 'address' ? address(card, t) : pix(card, t);
-  const name = t(`card.${card.type}`);
   return {
-    description: name,
-    logoText: name,
+    description: t(`card.${card.type}`),
+    logoText: FLAG,
     ...body,
     back: [
       ...body.back,
       { key: 'edit', label: '', value: '', link: { href: editUrl, text: t('pass.edit') } },
       { key: 'disclaimer', label: '', value: t('pass.disclaimer'), detect: false as const },
     ],
-    colors: colorsOf(card),
+    colors: passColors(card.type),
+    art: seedOf(card.id),
+    tone: card.type,
   };
 }

@@ -24,10 +24,7 @@ test.describe('in-app browser (Instagram)', () => {
       page.getByRole('button', { name: pt['guard.copyLink'] }),
     ).toBeVisible();
     await expect(
-      page.getByRole('button', { name: 'Adicionar à Carteira Apple' }),
-    ).toHaveCount(0);
-    await expect(
-      page.getByRole('img', { name: 'Adicionar à Carteira Apple' }),
+      page.getByRole('button', { name: pt['action.addToWallet'] }),
     ).toHaveCount(0);
     expect(csp).toEqual([]);
   });
@@ -49,7 +46,7 @@ test.describe('desktop handoff', () => {
     await page.getByLabel(pt['field.cpf'], { exact: true }).fill('52998224725');
     await page.getByLabel(pt['field.name'], { exact: true }).fill('Ana Souza');
     await expect(
-      page.getByRole('button', { name: 'Adicionar à Carteira Apple' }),
+      page.getByRole('button', { name: pt['action.addToWallet'] }),
     ).toHaveCount(0);
     await page.getByRole('button', { name: pt['guard.desktop'] }).click();
 

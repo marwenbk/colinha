@@ -2,13 +2,11 @@ import type { MessageKey } from '../i18n';
 import type { PixKeyType } from '../lib/pix/key';
 
 export type CardType = 'docs' | 'address' | 'pix';
-export type ColorId = 'graphite' | 'blue' | 'green' | 'teal' | 'purple' | 'orange';
 
 export interface CardBase {
   v: 1;
   id: string;
   type: CardType;
-  color: ColorId;
   updatedAt: number;
 }
 export interface DocsCard extends CardBase {
@@ -43,18 +41,29 @@ export interface PassField {
   key: string;
   label: string;
   value: string;
-  detect?: false;
+  /** Back fields: false turns Wallet's data detectors off, 'address' makes an address tappable (Maps). */
+  detect?: false | 'address';
   link?: { href: string; text: string };
 }
 export interface PassLayout {
   description: string;
+  /** Shown top left in Wallet: the Brazilian flag emoji, drawn by the system. */
   logoText: string;
   primary: PassField[];
   secondary: PassField[];
   auxiliary: PassField[];
   back: PassField[];
   colors: { bg: string; fg: string; label: string };
-  barcodes: { format: 'PKBarcodeFormatCode128' | 'PKBarcodeFormatQR'; message: string }[];
+  /** Seed for the card art (src/pass/art.ts), from the card id. */
+  art: number;
+  /** The card art's palette: one per card type. */
+  tone: CardType;
+  barcodes: {
+    format: 'PKBarcodeFormatCode128' | 'PKBarcodeFormatQR';
+    message: string;
+    /** Printed under the barcode, so a cashier can type it if the scan fails. */
+    altText?: string;
+  }[];
 }
 export interface FieldSpec {
   id: string;

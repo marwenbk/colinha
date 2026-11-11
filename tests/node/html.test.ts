@@ -3,7 +3,7 @@ import { existsSync, readFileSync, statSync } from 'node:fs';
 import { beforeAll, describe, expect, it } from 'vitest';
 
 const OUT = 'dist/client';
-const ORIGIN = 'https://colinha.app';
+const ORIGIN = 'https://colinha.xyz';
 
 const PT_TITLE = 'Colinha – CPF, endereço e Pix na Carteira do iPhone';
 const PT_DESC =
@@ -80,9 +80,9 @@ describe('static files', () => {
       expect(s).toContain(`<loc>${ORIGIN}${path}</loc>`);
     }
     expect(s.match(/<url>/g)).toHaveLength(3);
-    expect(s.match(/hreflang="pt-BR" href="https:\/\/colinha\.app\/pt\/"/g)).toHaveLength(3);
-    expect(s.match(/hreflang="en" href="https:\/\/colinha\.app\/en\/"/g)).toHaveLength(3);
-    expect(s.match(/hreflang="x-default" href="https:\/\/colinha\.app\/"/g)).toHaveLength(3);
+    expect(s.match(/hreflang="pt-BR" href="https:\/\/colinha\.xyz\/pt\/"/g)).toHaveLength(3);
+    expect(s.match(/hreflang="en" href="https:\/\/colinha\.xyz\/en\/"/g)).toHaveLength(3);
+    expect(s.match(/hreflang="x-default" href="https:\/\/colinha\.xyz\/"/g)).toHaveLength(3);
   });
   it('robots allows all and points at the sitemap', () => {
     const r = read('robots.txt');

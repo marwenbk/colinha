@@ -75,7 +75,7 @@ describe('deliverPass fallback to download', () => {
     vi.stubGlobal('caches', api);
     vi.stubGlobal('navigator', { serviceWorker: { register: vi.fn(), ...sw } });
     vi.stubGlobal('URL', Object.assign(class extends URL {}, {
-      createObjectURL: vi.fn(() => 'blob:https://colinha.app/x'),
+      createObjectURL: vi.fn(() => 'blob:https://colinha.xyz/x'),
       revokeObjectURL: vi.fn(),
     }));
     const clicks: HTMLAnchorElement[] = [];
@@ -96,7 +96,7 @@ describe('deliverPass fallback to download', () => {
     expect(go).not.toHaveBeenCalled();
     expect(clicks).toHaveLength(1);
     expect(clicks[0].download).toBe('colinha.pkpass');
-    expect(clicks[0].href).toBe('blob:https://colinha.app/x');
+    expect(clicks[0].href).toBe('blob:https://colinha.xyz/x');
   });
 
   it('downloads when ready never resolves, within the timeout', async () => {

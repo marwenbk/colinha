@@ -1,21 +1,21 @@
 import { afterEach, expect, it, vi } from 'vitest';
 
-const NAMES = ['icon.png', 'icon@2x.png', 'icon@3x.png', 'logo.png', 'logo@2x.png', 'logo@3x.png'];
+const NAMES = ['icon.png', 'icon@2x.png', 'icon@3x.png'];
 
 afterEach(() => {
   vi.unstubAllGlobals();
   vi.resetModules();
 });
 
-it('fetches the six PNGs under /pass/ once and caches them', async () => {
+it('fetches the icons under /pass/ once and caches them', async () => {
   const f = vi.fn(async (u: string) => new Response(new TextEncoder().encode(u)));
   vi.stubGlobal('fetch', f);
   const { loadPassImages } = await import('../../../src/pass/assets');
   const a = await loadPassImages();
   expect(Object.keys(a).sort()).toEqual([...NAMES].sort());
-  expect(new TextDecoder().decode(a['logo@2x.png'])).toBe('/pass/logo@2x.png');
+  expect(new TextDecoder().decode(a['icon@2x.png'])).toBe('/pass/icon@2x.png');
   await loadPassImages();
-  expect(f).toHaveBeenCalledTimes(6);
+  expect(f).toHaveBeenCalledTimes(3);
 });
 
 it('retries after a failed fetch', async () => {

@@ -76,16 +76,16 @@ export function firstInvalid(card: Card): string | null {
 export function newCard(type: CardType, prefill?: { name?: string; city?: string }): Card {
   const base = { v: 1 as const, id: newSerial(), updatedAt: Date.now() };
   if (type === 'docs') {
-    const c: DocsCard = { ...base, type, color: 'graphite', cpf: '', name: '', rg: '', rnm: '',
+    const c: DocsCard = { ...base, type, cpf: '', name: '', rg: '', rnm: '',
       passport: '', barcode: true };
     return c;
   }
   if (type === 'address') {
-    const c: AddressCard = { ...base, type, color: 'blue', cep: '', line1: '', line2: '',
+    const c: AddressCard = { ...base, type, cep: '', line1: '', line2: '',
       district: '', city: '', uf: '', reference: '' };
     return c;
   }
-  const c: PixCard = { ...base, type, color: 'teal', key: '', keyType: null,
+  const c: PixCard = { ...base, type, key: '', keyType: null,
     name: prefill?.name ?? '', city: prefill?.city ?? '' };
   return c;
 }

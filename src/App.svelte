@@ -6,7 +6,6 @@
   import Editor from './screens/Editor.svelte';
   import Home from './screens/Home.svelte';
   import InfoSheet from './screens/InfoSheet.svelte';
-  import TypePicker from './screens/TypePicker.svelte';
   import { cards } from './state/cards.svelte';
 
   let { initialCard = null }: { initialCard?: Card | null } = $props();
@@ -18,7 +17,6 @@
   let editing = $state.raw<Card | null>(untrack(() => initialCard));
   let editorOpen = $state(untrack(() => initialCard !== null));
   let session = $state(0);
-  let pickerOpen = $state(false);
   let infoOpen = $state(false);
 
   function edit(card: Card) {
@@ -34,7 +32,6 @@
   }
 
   function create(type: CardType) {
-    pickerOpen = false;
     const prefill = type === 'pix' ? { name: latest('docs')?.name, city: latest('address')?.city } : undefined;
     edit(newCard(type, prefill));
   }
@@ -52,10 +49,8 @@
   list={cards.list}
   oncreate={create}
   onedit={edit}
-  onnew={() => (pickerOpen = true)}
   oninfo={() => (infoOpen = true)} />
 
-<TypePicker open={pickerOpen} onpick={create} onclose={() => (pickerOpen = false)} />
 <InfoSheet open={infoOpen} onclose={() => (infoOpen = false)} />
 
 {#if editing}

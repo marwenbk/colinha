@@ -3,7 +3,7 @@ import type { Card } from '../../../src/cards/types';
 
 const KEY = 'colinha.cards.v1';
 const mk = (id: string, name = 'Ana'): Card => ({
-  v: 1, id, type: 'pix', color: 'teal', updatedAt: 1, key: 'a@b.com', keyType: 'email', name, city: 'Rio',
+  v: 1, id, type: 'pix', updatedAt: 1, key: 'a@b.com', keyType: 'email', name, city: 'Rio',
 });
 const fresh = async () => {
   vi.resetModules();
