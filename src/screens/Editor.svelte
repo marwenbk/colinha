@@ -32,13 +32,28 @@
   let confirming = $state(false);
   let toast = $state({ n: 0, message: '' });
   let body = $state<HTMLDivElement>();
+  let barHeight = $state(0);
+
+  // The sheet's scroll container: a focused row (e.g. an invalid `uf`) must never
+  // land behind the sticky Add bar. CSSOM, which the CSP allows.
+  $effect(() => {
+    const scroller = body?.parentElement;
+    scroller?.style.setProperty('scroll-padding-bottom', `${barHeight + 16}px`);
+  });
 
   const layout = $derived(previewLayout(draft, t));
   const saved = $derived(cards.list.some((c) => c.id === draft.id));
   const link = $derived(encodeEditLink($state.snapshot(draft) as Card, location.origin));
 
   let stopWaiting: (() => void) | null = null;
-  $effect(() => () => stopWaiting?.());
+  // Set when the Editor is torn down; an Add still in flight must then do nothing.
+  let destroyed = false;
+  $effect(() => () => {
+    destroyed = true;
+    stopWaiting?.();
+  });
+  /** The person closed the sheet (or it was unmounted) while the pass was being built. */
+  const abandoned = () => destroyed || !open;
 
   function say(key: MessageKey) {
     toast = { n: toast.n + 1, message: t(key) };
@@ -87,15 +102,17 @@
     const next = { ...($state.snapshot(draft) as Card), updatedAt: Date.now() };
     try {
       const blob = await buildPkpass(next, t, location.origin);
+      if (abandoned()) return;
       cards.save(next);
       await deliverPass(blob);
     } catch (e) {
+      if (destroyed) return;
       pocket = false;
       busy = false;
       say(errorKey(e));
       return;
     }
-    closeAfterDelivery();
+    if (!abandoned()) closeAfterDelivery();
   }
 
   /** Wallet's sheet hides the page; close once it's visible again. */
@@ -136,13 +153,13 @@
 
     <EditorFields card={draft} {invalid} onpatch={patch} />
 
-    {#if saved}
+    {#if saved && !busy}
       <button type="button" class="delete" onclick={() => (confirming = true)}>
         {t('action.delete')}
       </button>
     {/if}
 
-    <AddBar {env} {busy} {link} onadd={add} oncopied={() => say('guard.copied')} />
+    <AddBar {env} {busy} {link} bind:height={barHeight} onadd={add} oncopied={() => say('guard.copied')} />
   </div>
 </Sheet>
 

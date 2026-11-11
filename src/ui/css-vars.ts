@@ -24,4 +24,7 @@ export function boolAttr(node: HTMLElement, name: string) {
  */
 export function portal(node: HTMLElement) {
   document.body.appendChild(node);
+  // Svelte removes a block's nodes by walking siblings from its anchor, which no
+  // longer reaches a moved node; remove it ourselves when the owner is destroyed.
+  return { destroy: () => node.remove() };
 }

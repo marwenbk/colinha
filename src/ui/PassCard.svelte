@@ -82,7 +82,9 @@
     border-radius: var(--r-card);
     background: var(--pass-bg);
     color: var(--pass-fg);
-    box-shadow: var(--shadow-card);
+    box-shadow:
+      inset 0 0 0 0.5px var(--card-edge),
+      var(--shadow-card);
     font-family: var(--font);
     transition: background-color var(--dur-micro) ease-out;
   }

@@ -13,7 +13,16 @@
     link,
     onadd,
     oncopied,
-  }: { env: Env; busy: boolean; link: string; onadd: () => void; oncopied: () => void } = $props();
+    height = $bindable(0),
+  }: {
+    env: Env;
+    busy: boolean;
+    link: string;
+    onadd: () => void;
+    oncopied: () => void;
+    /** The bar's rendered height, so the Editor can keep focused rows clear of it. */
+    height?: number;
+  } = $props();
 
   let qrOpen = $state(false);
 
@@ -35,7 +44,7 @@
   }
 </script>
 
-<div class="bar">
+<div class="bar" bind:offsetHeight={height}>
   {#if env.inApp}
     <p class="banner">{t('guard.inApp')}</p>
     <button type="button" class="capsule" onclick={copy}>

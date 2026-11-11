@@ -111,8 +111,9 @@
 
   /** Moves the sheet out of #app (so the page-sheet scale doesn't apply to it) and focuses it. */
   function mount(node: HTMLElement) {
-    portal(node);
+    const moved = portal(node);
     node.querySelector<HTMLElement>('[role="dialog"]')?.focus();
+    return moved;
   }
 
   function onkeydown(e: KeyboardEvent) {

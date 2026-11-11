@@ -19,6 +19,9 @@
 
   /* Card shadow (cards only; lists are flat) */
   --shadow-card: 0 1px 2px rgb(0 0 0 / 0.1), 0 10px 30px rgb(0 0 0 / 0.14);
+  /* Hairline inner edge for cards: none in light, the glass edge in dark (the shadow
+     disappears on black and Grafite equals the dark surface). */
+  --card-edge: transparent;
 
   /* Radii */
   --r-capsule: 9999px;
@@ -63,6 +66,7 @@
     --danger: #ff453a;
     --ok: #30d158;
     --glass-edge: rgb(255 255 255 / 0.14);
+    --card-edge: var(--glass-edge);
     --glass-shadow: 0 8px 24px rgb(0 0 0 / 0.4);
   }
 }
