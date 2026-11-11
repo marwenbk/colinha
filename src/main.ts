@@ -21,4 +21,7 @@ if (location.hash.startsWith('#c=')) {
   history.replaceState(null, '', location.pathname);
 }
 
-mount(App, { target: document.getElementById('app')!, props: { initialCard } });
+// The static hero (for crawlers) lives inside the mount node; mount() appends, so clear it first.
+const target = document.getElementById('app')!;
+target.replaceChildren();
+mount(App, { target, props: { initialCard } });

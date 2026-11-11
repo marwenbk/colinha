@@ -1,9 +1,48 @@
-import { defineConfig } from 'vite';
+import { defineConfig, type Plugin } from 'vite';
 import { svelte } from '@sveltejs/vite-plugin-svelte';
 import { cloudflare } from '@cloudflare/vite-plugin';
+import { SITE_ORIGIN } from './src/config';
+
+const PATHS = ['/', '/pt/', '/en/'];
+
+// SITE_ORIGIN (src/config.ts) is the single source for absolute URLs: it fills
+// %SITE_ORIGIN% in the HTML pages and generates robots.txt and sitemap.xml.
+function siteOrigin(): Plugin {
+  const alt = (indent: string) =>
+    [
+      ['pt-BR', '/pt/'],
+      ['en', '/en/'],
+      ['x-default', '/'],
+    ]
+      .map(
+        ([l, p]) =>
+          `${indent}<xhtml:link rel="alternate" hreflang="${l}" href="${SITE_ORIGIN}${p}"/>`,
+      )
+      .join('\n');
+  return {
+    name: 'colinha-site-origin',
+    transformIndexHtml: (html) => html.replaceAll('%SITE_ORIGIN%', SITE_ORIGIN),
+    generateBundle() {
+      if (this.environment?.name !== 'client') return;
+      const urls = PATHS.map(
+        (p) => `  <url>\n    <loc>${SITE_ORIGIN}${p}</loc>\n${alt('    ')}\n  </url>`,
+      ).join('\n');
+      this.emitFile({
+        type: 'asset',
+        fileName: 'sitemap.xml',
+        source: `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">\n${urls}\n</urlset>\n`,
+      });
+      this.emitFile({
+        type: 'asset',
+        fileName: 'robots.txt',
+        source: `User-agent: *\nAllow: /\n\nSitemap: ${SITE_ORIGIN}/sitemap.xml\n`,
+      });
+    },
+  };
+}
 
 export default defineConfig({
-  plugins: [svelte(), cloudflare()],
+  plugins: [svelte(), cloudflare(), siteOrigin()],
   environments: {
     // The Cloudflare plugin adds a separate worker environment, so the HTML
     // entries must be scoped to the client environment only.

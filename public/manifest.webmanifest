@@ -1,0 +1,13 @@
+{
+  "name": "Colinha",
+  "short_name": "Colinha",
+  "start_url": "/",
+  "display": "standalone",
+  "lang": "pt-BR",
+  "theme_color": "#F2F2F7",
+  "background_color": "#F2F2F7",
+  "icons": [
+    { "src": "/apple-touch-icon.png", "sizes": "180x180", "type": "image/png" },
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}
