@@ -41,6 +41,10 @@ function siteOrigin(): Plugin {
   };
 }
 
+// The e2e bundle never delivers passes; refuse to build it for production.
+if (process.env.VITE_E2E && process.env.CLOUDFLARE_ENV === 'production')
+  throw new Error('VITE_E2E must not be set when building for production');
+
 export default defineConfig({
   plugins: [svelte(), cloudflare(), siteOrigin()],
   environments: {

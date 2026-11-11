@@ -2,6 +2,7 @@ import type { Env } from './env';
 import { readSigner } from './cert';
 import { importSigningKey } from './key';
 import { signDetached } from './cms';
+import { fromB64 } from './b64';
 
 type Signer = {
   key: CryptoKey;
@@ -9,13 +10,6 @@ type Signer = {
   chain: Uint8Array[];
   notAfter: Date;
 };
-
-function fromB64(s: string): Uint8Array {
-  const bin = atob(s.replace(/\s+/g, ''));
-  const out = new Uint8Array(bin.length);
-  for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
-  return out;
-}
 
 // Parsed once per isolate, keyed on the env strings so a changed secret reloads.
 let cached: { k: string; p: Promise<Signer> } | undefined;

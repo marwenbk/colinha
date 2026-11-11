@@ -9,11 +9,11 @@ import { PALETTE } from './palette';
 import { firstInvalid } from './templates';
 import type { AddressCard, Card, DocsCard, PassField, PassLayout, PixCard } from './types';
 
-const f = (key: string, label: string, value: string): PassField => ({ key, label, value });
+export const f = (key: string, label: string, value: string): PassField => ({ key, label, value });
 const back = (key: string, label: string, value: string): PassField => ({
   key: `back_${key}`, label, value, detect: false,
 });
-const present = (fields: PassField[]) => fields.filter((x) => x.value !== '');
+export const present = (fields: PassField[]) => fields.filter((x) => x.value !== '');
 
 function formatPixKey(type: PixKeyType, v: string): string {
   switch (type) {
@@ -90,6 +90,11 @@ function pix(c: PixCard, t: T) {
   };
 }
 
+export const colorsOf = (card: Card) => {
+  const p = PALETTE[card.color];
+  return { bg: p.bg, fg: 'rgb(255,255,255)', label: p.label };
+};
+
 /** Assumes firstInvalid(card) === null; throws otherwise. */
 export function toLayout(card: Card, t: T, editUrl: string): PassLayout {
   const bad = firstInvalid(card);
@@ -97,7 +102,6 @@ export function toLayout(card: Card, t: T, editUrl: string): PassLayout {
   const body =
     card.type === 'docs' ? docs(card, t) : card.type === 'address' ? address(card, t) : pix(card, t);
   const name = t(`card.${card.type}`);
-  const p = PALETTE[card.color];
   return {
     description: name,
     logoText: name,
@@ -107,6 +111,6 @@ export function toLayout(card: Card, t: T, editUrl: string): PassLayout {
       { key: 'edit', label: '', value: '', link: { href: editUrl, text: t('pass.edit') } },
       { key: 'disclaimer', label: '', value: t('pass.disclaimer'), detect: false as const },
     ],
-    colors: { bg: p.bg, fg: 'rgb(255,255,255)', label: p.label },
+    colors: colorsOf(card),
   };
 }

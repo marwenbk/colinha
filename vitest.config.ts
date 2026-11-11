@@ -23,7 +23,8 @@ export default defineConfig({
         plugins: [
           cloudflareTest({
             wrangler: { configPath: './wrangler.jsonc' },
-            // TEST-ONLY PKI from worker/test/fixtures; no limiter binding on purpose.
+            // TEST-ONLY PKI from worker/test/fixtures. The top-level `ratelimits` in
+            // wrangler.jsonc gives tests a SIGN_LIMITER binding.
             miniflare: {
               bindings: {
                 PASS_KEY_PKCS8: fx('leaf.pk8.pem').toString(),

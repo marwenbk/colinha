@@ -1,4 +1,5 @@
 // Imports the pass-signing private key (PKCS#8 PEM) once per isolate.
+import { fromB64 } from './b64';
 
 const cache = new Map<string, Promise<CryptoKey>>();
 
@@ -8,10 +9,7 @@ function pemToDer(pem: string): Uint8Array<ArrayBuffer> {
   );
   if (!m)
     throw new Error('key: expected an unencrypted PKCS#8 "PRIVATE KEY" PEM');
-  const bin = atob(m[1].replace(/\s+/g, ''));
-  const out = new Uint8Array(bin.length);
-  for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
-  return out;
+  return fromB64(m[1]);
 }
 
 export function importSigningKey(pkcs8Pem: string): Promise<CryptoKey> {

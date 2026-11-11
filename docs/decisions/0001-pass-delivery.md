@@ -60,7 +60,8 @@ Copied from the spike checks in plan Task 0. Record each result here and change 
 - [ ] `"dataDetectorTypes": []` stops the CPF from being detected as a phone number.
 - [ ] The barcode falls back to the QR code on Apple Watch.
 - [ ] What happens in Chrome on iOS, and in the in-app browsers of Instagram,
-      Facebook/Messenger, TikTok and WhatsApp.
+      Facebook/Messenger, TikTok and WhatsApp (WhatsApp probably opens SFSafariViewController).
+- [ ] Note: the latest pass stays in Cache Storage until the next delivery or until "Erase everything".
 - [ ] On an iPad, if available, whether it can add passes at all. Reports say it can't.
 - [ ] Also note: the edit and disclaimer back fields use an empty `label`. PassKit treats
       labels as optional; if Wallet rejects or mis-renders them, use `ORG_NAME` instead.

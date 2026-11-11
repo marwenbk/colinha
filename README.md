@@ -1,6 +1,6 @@
 # Colinha
 
-Colinha turns the numbers you keep in your notes (CPF, Pix key, loyalty cards) into Apple Wallet passes. Everything runs in the browser. There are no accounts and no database, and the server keeps no logs.
+Colinha turns the numbers you keep in your notes (CPF and other documents, address, Pix key) into Apple Wallet passes. Everything runs in the browser. There are no accounts and no database, and the server keeps no logs.
 
 ## How signing works (hash-only)
 
@@ -39,10 +39,27 @@ It converts the key and certificates and runs `wrangler secret put` for `PASS_KE
 **Deploy.** Environments are `preview` (on `workers.dev`) and `production` (custom domain `colinha.app`, set in `wrangler.jsonc`):
 
 ```sh
-CLOUDFLARE_ENV=<env> pnpm build && pnpm wrangler deploy
+CLOUDFLARE_ENV=<env> pnpm run deploy     # defaults to production
 ```
 
-Check a deployed pass with `scripts/verify-pass.sh pass.pkpass WWDR.pem`, and sign a minimal one with `node scripts/smoke-pass.mjs <origin>`.
+`pnpm run deploy` always rebuilds first and is the only deploy command to use. `pnpm e2e` builds a test bundle (`VITE_E2E=1`, which never delivers passes) into the same `dist/`, so a bare `wrangler deploy` after it would ship that bundle. The build fails if `VITE_E2E` is set for production.
+
+**Check a deployed pass.** Sign a minimal one with `node scripts/smoke-pass.mjs <origin>`. It uses `PASS_TYPE_ID` and `TEAM_ID` from `src/config.ts`; override them with `SMOKE_PASS_TYPE_ID` and `SMOKE_TEAM_ID`. Then verify it against Apple's root:
+
+1. Download Apple Inc. Root (`AppleIncRootCertificate.cer`) from [apple.com/certificateauthority](https://www.apple.com/certificateauthority/).
+2. Convert it: `openssl x509 -inform DER -in AppleIncRootCertificate.cer -out apple-root.pem`
+3. Run `scripts/verify-pass.sh smoke.pkpass apple-root.pem`.
+
+The signature already embeds the WWDR intermediate, so the root is the only CA file needed.
+
+## End-to-end tests
+
+```sh
+pnpm exec playwright install webkit chromium
+pnpm e2e
+```
+
+Needs OpenSSL 3 with `cms` (on macOS, Homebrew `openssl@3`); set `OPENSSL=/path/to/openssl` to pick one.
 
 ## Renewing the certificate
 

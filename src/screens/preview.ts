@@ -1,13 +1,10 @@
 // The front of a pass as the Editor and Home show it, for complete and partial cards.
-import { toLayout } from '../cards/layout';
-import { PALETTE } from '../cards/palette';
+import { colorsOf, f, present, toLayout } from '../cards/layout';
 import { FIELDS, firstInvalid } from '../cards/templates';
-import type { Card, PassField, PassLayout } from '../cards/types';
+import type { Card, PassLayout } from '../cards/types';
 import type { T } from '../i18n';
 import { applyMask } from '../ui/mask';
 
-const f = (key: string, label: string, value: string): PassField => ({ key, label, value });
-const present = (fields: PassField[]) => fields.filter((x) => x.value !== '');
 const maskOf = (type: 'docs' | 'address', id: string) =>
   FIELDS[type].find((s) => s.id === id)!.mask!;
 
@@ -15,18 +12,17 @@ const maskOf = (type: 'docs' | 'address', id: string) =>
  * Format hints for empty primary values. These are shapes, not words, so they
  * don't go through the copy table; the Pix key hint does.
  */
-export const HINT = { cpf: '000.000.000-00', cep: '00000-000' } as const;
+const HINT = { cpf: '000.000.000-00', cep: '00000-000' } as const;
 
 /** A complete card gets its real pass layout; a partial one gets what's typed so far. */
 export function previewLayout(card: Card, t: T): PassLayout {
   if (firstInvalid(card) === null) return toLayout(card, t, '');
   const name = t(`card.${card.type}`);
-  const p = PALETTE[card.color];
   const base = {
     description: name,
     logoText: name,
     back: [],
-    colors: { bg: p.bg, fg: 'rgb(255,255,255)', label: p.label },
+    colors: colorsOf(card),
   };
   if (card.type === 'docs') {
     return {

@@ -66,6 +66,35 @@ test('creates a Docs card: the pass unzips, has the CPF and its signature verifi
   expect(saved[0].id).toBe(pass.serialNumber);
 });
 
+test('privacy: only same-origin requests, and the only POST is /api/sign with 32 bytes', async ({
+  page,
+  baseURL,
+}) => {
+  const requests: import('@playwright/test').Request[] = [];
+  page.on('request', (r) => requests.push(r));
+  await page.goto('/');
+  await page.getByRole('button', { name: new RegExp(pt['card.docs']) }).click();
+  await fillDocs(page);
+  await badge(page).click();
+  await lastPass(page);
+  await expectEditorClosed(page);
+
+  expect(requests.length).toBeGreaterThan(0);
+  const origin = new URL(baseURL!).origin;
+  const foreign = requests
+    .map((r) => r.url())
+    .filter((u) => !u.startsWith('data:') && !u.startsWith('blob:'))
+    .filter((u) => new URL(u).origin !== origin);
+  expect(foreign, 'cross-origin requests').toEqual([]);
+
+  const posts = requests.filter((r) => r.method() !== 'GET');
+  expect(posts.length, 'at least one sign request').toBeGreaterThan(0);
+  for (const r of posts) {
+    expect(`${r.method()} ${new URL(r.url()).pathname}`).toBe('POST /api/sign');
+    expect(r.postDataBuffer()?.length).toBe(32);
+  }
+});
+
 test('an edit link opens the Editor prefilled and clears the hash', async ({
   page,
   baseURL,

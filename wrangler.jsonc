@@ -17,7 +17,7 @@
       "ratelimits": [
         {
           "name": "SIGN_LIMITER",
-          "namespace_id": "1001",
+          "namespace_id": "1002",
           "simple": { "limit": 20, "period": 60 },
         },
       ],

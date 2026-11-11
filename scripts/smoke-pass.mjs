@@ -1,10 +1,14 @@
 // Builds a minimal generic pass, has <origin>/api/sign sign it, writes smoke.pkpass.
 // Usage: node scripts/smoke-pass.mjs <origin> [out.pkpass]
-//   SMOKE_PASS_TYPE_ID, SMOKE_TEAM_ID: identifiers matching your Apple certificate.
+//   SMOKE_PASS_TYPE_ID, SMOKE_TEAM_ID: override the defaults read from src/config.ts.
 import { createHash, randomUUID } from 'node:crypto';
-import { writeFileSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
 import { zipSync, strToU8 } from 'fflate';
 import sharp from 'sharp';
+
+const config = readFileSync(new URL('../src/config.ts', import.meta.url), 'utf8');
+const fromConfig = (name) =>
+  config.match(new RegExp(`export const ${name} = '([^']+)'`))?.[1];
 
 const origin = process.argv[2];
 const out = process.argv[3] ?? 'smoke.pkpass';
@@ -16,8 +20,8 @@ if (!origin) {
 const pass = {
   formatVersion: 1,
   passTypeIdentifier:
-    process.env.SMOKE_PASS_TYPE_ID ?? 'pass.com.example.colinha',
-  teamIdentifier: process.env.SMOKE_TEAM_ID ?? 'ABCDE12345',
+    process.env.SMOKE_PASS_TYPE_ID ?? fromConfig('PASS_TYPE_ID'),
+  teamIdentifier: process.env.SMOKE_TEAM_ID ?? fromConfig('TEAM_ID'),
   serialNumber: randomUUID(),
   organizationName: 'Colinha',
   description: 'Colinha smoke test',
