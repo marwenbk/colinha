@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { portal } from './css-vars';
+
   let { message, onhide }: { message: string; onhide?: () => void } = $props();
 
   let visible = $state(false);
@@ -17,7 +19,8 @@
   });
 </script>
 
-<div class="toast-region" role="status" aria-live="polite">
+<!-- Portaled to body: #app is inert and scaled behind sheets, and toasts show over them. -->
+<div class="toast-region" role="status" aria-live="polite" use:portal>
   {#if visible}
     <div class="toast">{message}</div>
   {/if}
@@ -32,7 +35,7 @@
     display: flex;
     justify-content: center;
     pointer-events: none;
-    z-index: 30;
+    z-index: 40; /* above sheets (20) */
   }
 
   /* Floating: glass capsule. */

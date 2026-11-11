@@ -17,7 +17,9 @@
 </script>
 
 <span class="wrap">
-  <button type="button" class="badge" aria-disabled={busy ? 'true' : undefined} onclick={handle}>
+  <button type="button" class="badge" aria-disabled={busy ? 'true' : undefined}
+    aria-busy={busy ? 'true' : undefined}
+    onclick={handle}>
     <picture>
       <source
         srcset="/badges/add-to-apple-wallet-{locale}-outline.svg"
@@ -26,7 +28,7 @@
     </picture>
   </button>
   {#if busy}
-    <span class="spinner" role="progressbar" aria-label={ALT[locale]}></span>
+    <span class="spinner" role="progressbar"></span>
   {/if}
 </span>
 

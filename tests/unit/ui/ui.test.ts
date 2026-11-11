@@ -9,6 +9,8 @@ import FieldRow from '../../../src/ui/FieldRow.svelte';
 import PassCard from '../../../src/ui/PassCard.svelte';
 import Segmented from '../../../src/ui/Segmented.svelte';
 import SheetHarness from './SheetHarness.svelte';
+import ToastHarness from './ToastHarness.svelte';
+import WalletBadge from '../../../src/ui/WalletBadge.svelte';
 
 afterEach(() => cleanup());
 
@@ -51,6 +53,38 @@ describe('Sheet', () => {
     flushSync();
     expect(screen.queryByRole('dialog')).toBeNull();
     expect(document.activeElement).toBe(opener);
+  });
+});
+
+describe('Toast', () => {
+  it('is portaled to body, outside the inert #app, while a page sheet is open', () => {
+    const app = document.createElement('div');
+    app.id = 'app';
+    document.body.append(app);
+    try {
+      render(ToastHarness, { target: app });
+      flushSync();
+      expect(app.classList.contains('behind-page-sheet')).toBe(true);
+      const region = screen.getByRole('status');
+      expect(region.parentElement).toBe(document.body);
+      expect(app.contains(region)).toBe(false);
+      expect(region.textContent).toContain('No connection. Try again.');
+    } finally {
+      cleanup();
+      app.remove();
+    }
+  });
+});
+
+describe('WalletBadge', () => {
+  it('marks the button busy and ignores taps while busy', async () => {
+    const onclick = vi.fn();
+    render(WalletBadge, { locale: 'en', busy: true, onclick });
+    const button = screen.getByRole('button', { name: 'Add to Apple Wallet' });
+    expect(button.getAttribute('aria-busy')).toBe('true');
+    expect(screen.getByRole('progressbar').hasAttribute('aria-label')).toBe(false);
+    await fireEvent.click(button);
+    expect(onclick).not.toHaveBeenCalled();
   });
 });
 

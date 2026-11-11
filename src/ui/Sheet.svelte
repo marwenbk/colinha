@@ -22,6 +22,7 @@
 <script lang="ts">
   import { untrack, type Snippet } from 'svelte';
   import { t } from '../i18n/current';
+  import { portal } from './css-vars';
   import GlassButton from './GlassButton.svelte';
   import X from './icons/X.svelte';
 
@@ -110,7 +111,7 @@
 
   /** Moves the sheet out of #app (so the page-sheet scale doesn't apply to it) and focuses it. */
   function mount(node: HTMLElement) {
-    document.body.appendChild(node);
+    portal(node);
     node.querySelector<HTMLElement>('[role="dialog"]')?.focus();
   }
 

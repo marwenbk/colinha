@@ -54,7 +54,7 @@
 
   button {
     flex: 1;
-    min-height: 40px;
+    min-height: var(--target);
     padding: 0 var(--s-3);
     border: 0;
     border-radius: var(--r-capsule);
@@ -65,7 +65,6 @@
     transition: background-color var(--dur-micro) ease-out;
   }
 
-  /* 40 + 2 + 2 padding = a 44pt target */
   button.on {
     background: var(--surface);
   }

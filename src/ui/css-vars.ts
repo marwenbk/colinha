@@ -17,3 +17,11 @@ export function cssVars(node: HTMLElement, vars: Record<string, string>) {
 export function boolAttr(node: HTMLElement, name: string) {
   node.setAttribute(name, '');
 }
+
+/**
+ * Moves the node to `document.body`, outside `#app`, which is inert and scaled
+ * while a sheet is open. The node must be its block's only root element.
+ */
+export function portal(node: HTMLElement) {
+  document.body.appendChild(node);
+}
