@@ -63,11 +63,14 @@
     height: 30px;
     border-radius: var(--r-capsule);
     background: var(--swatch);
+    /* A hairline so Grafite still reads on the dark surface. */
+    box-shadow: inset 0 0 0 0.5px var(--separator);
     transition: box-shadow var(--dur-micro) ease-out;
   }
 
   .dot.on {
     box-shadow:
+      inset 0 0 0 0.5px var(--separator),
       0 0 0 2px var(--surface),
       0 0 0 4px var(--label);
   }

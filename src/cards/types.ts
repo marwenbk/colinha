@@ -64,6 +64,8 @@ export interface FieldSpec {
   inputmode?: string;
   autocomplete?: string;
   uppercase?: boolean;
+  /** Typed exactly: no autocapitalize, autocorrect or spellcheck (the Pix key). */
+  verbatim?: boolean;
   /** Digit mask applied as you type, `0` = digit (e.g. `000.000.000-00`). */
   mask?: string;
   normalize(s: string): string;

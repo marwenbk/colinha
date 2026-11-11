@@ -3,7 +3,11 @@
     "target": "ES2022",
     "module": "ESNext",
     "moduleResolution": "bundler",
-    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "lib": [
+      "ES2022",
+      "DOM",
+      "DOM.Iterable"
+    ],
     "types": [
       "svelte",
       "vite/client",
@@ -22,6 +26,7 @@
     "src/**/*.svelte",
     "worker/**/*.ts",
     "tests/**/*.ts",
+    "e2e/**/*.ts",
     "*.ts",
     "*.js"
   ]

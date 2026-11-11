@@ -73,7 +73,9 @@
     placeholder={shownPlaceholder}
     inputmode={spec.inputmode as 'numeric' | 'text' | undefined}
     autocomplete={spec.autocomplete as import('svelte/elements').FullAutoFill | undefined}
-    autocapitalize={spec.uppercase ? 'characters' : undefined}
+    autocapitalize={spec.uppercase ? 'characters' : spec.verbatim ? 'off' : undefined}
+    autocorrect={spec.verbatim ? 'off' : undefined}
+    spellcheck={spec.verbatim ? false : undefined}
     maxlength={spec.mask ? spec.mask.length : spec.maxLength}
     aria-invalid={invalid ? 'true' : undefined}
     class:tnum={spec.mask !== undefined}

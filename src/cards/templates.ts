@@ -43,7 +43,7 @@ export const FIELDS: Record<CardType, FieldSpec[]> = {
       normalize: text(60) },
   ],
   pix: [
-    { id: 'key', label: 'field.pixKey', required: true, maxLength: 77, normalize: (s) => s.trim(),
+    { id: 'key', label: 'field.pixKey', required: true, maxLength: 77, verbatim: true, normalize: (s) => s.trim(),
       valid: (v) => detectPixKey(v).length > 0 },
     { id: 'name', label: 'field.name', required: true, maxLength: 40, autocomplete: 'name',
       normalize: text(40), valid: (v) => toPixText(v, 25) !== '' },

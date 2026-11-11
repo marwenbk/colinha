@@ -4,6 +4,7 @@
 
   let {
     label,
+    name,
     options,
     value,
     onchange,
@@ -12,6 +13,7 @@
     placeholder = '',
   }: {
     label: string;
+    name?: string;
     options: readonly { value: string; label: string }[];
     value: string;
     onchange: (value: string) => void;
@@ -28,6 +30,7 @@
   <span class="control">
     <select
       {id}
+      {name}
       {value}
       {autocomplete}
       aria-invalid={invalid ? 'true' : undefined}
