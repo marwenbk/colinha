@@ -1,0 +1,256 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`buildPassJson > matches the address snapshot 1`] = `
+{
+  "backgroundColor": "rgb(0,64,221)",
+  "description": "Endereço",
+  "foregroundColor": "rgb(255,255,255)",
+  "formatVersion": 1,
+  "generic": {
+    "auxiliaryFields": [
+      {
+        "key": "line2",
+        "label": "Complemento",
+        "value": "Apto 42",
+      },
+      {
+        "key": "district",
+        "label": "Bairro",
+        "value": "Consolação",
+      },
+      {
+        "key": "cityUf",
+        "label": "Cidade",
+        "value": "São Paulo - SP",
+      },
+    ],
+    "backFields": [
+      {
+        "dataDetectorTypes": [],
+        "key": "back_address",
+        "label": "Endereço",
+        "value": "Rua Augusta, 1500, Apto 42
+Consolação, São Paulo - SP
+01310-100",
+      },
+      {
+        "dataDetectorTypes": [],
+        "key": "back_reference",
+        "label": "Referência",
+        "value": "Perto do metrô",
+      },
+      {
+        "attributedValue": "<a href='https://colinha.app/#c=eyJ2IjoxLCJpZCI6IjAxMjM0NTY3ODlhYmNkZWYwMTIzNDU2Nzg5YWJjZGVmIiwidHlwZSI6ImFkZHJlc3MiLCJjb2xvciI6ImJsdWUiLCJ1cGRhdGVkQXQiOjE3NjI3MzI4MDAwMDAsImNlcCI6IjAxMzEwMTAwIiwibGluZTEiOiJSdWEgQXVndXN0YSwgMTUwMCIsImxpbmUyIjoiQXB0byA0MiIsImRpc3RyaWN0IjoiQ29uc29sYcOnw6NvIiwiY2l0eSI6IlPDo28gUGF1bG8iLCJ1ZiI6IlNQIiwicmVmZXJlbmNlIjoiUGVydG8gZG8gbWV0csO0In0'>Editar este cartão</a>",
+        "dataDetectorTypes": [
+          "PKDataDetectorTypeLink",
+        ],
+        "key": "edit",
+        "label": "",
+        "value": "Editar este cartão",
+      },
+      {
+        "dataDetectorTypes": [],
+        "key": "disclaimer",
+        "label": "",
+        "value": "Não é documento oficial.",
+      },
+    ],
+    "primaryFields": [
+      {
+        "key": "cep",
+        "label": "CEP",
+        "value": "01310-100",
+      },
+    ],
+    "secondaryFields": [
+      {
+        "key": "line1",
+        "label": "Rua e número",
+        "value": "Rua Augusta, 1500",
+      },
+    ],
+  },
+  "labelColor": "rgb(191,207,247)",
+  "logoText": "Endereço",
+  "organizationName": "Colinha",
+  "passTypeIdentifier": "pass.app.colinha.card",
+  "serialNumber": "0123456789abcdef0123456789abcdef",
+  "teamIdentifier": "TEAMID0000",
+}
+`;
+
+exports[`buildPassJson > matches the docs snapshot 1`] = `
+{
+  "backgroundColor": "rgb(28,28,30)",
+  "barcodes": [
+    {
+      "format": "PKBarcodeFormatCode128",
+      "message": "52998224725",
+      "messageEncoding": "iso-8859-1",
+    },
+    {
+      "format": "PKBarcodeFormatQR",
+      "message": "52998224725",
+      "messageEncoding": "iso-8859-1",
+    },
+  ],
+  "description": "Documentos",
+  "foregroundColor": "rgb(255,255,255)",
+  "formatVersion": 1,
+  "generic": {
+    "auxiliaryFields": [
+      {
+        "key": "rg",
+        "label": "RG",
+        "value": "12.345.678-9",
+      },
+      {
+        "key": "passport",
+        "label": "Passaporte",
+        "value": "FZ123456",
+      },
+    ],
+    "backFields": [
+      {
+        "dataDetectorTypes": [],
+        "key": "back_cpf",
+        "label": "CPF",
+        "value": "529.982.247-25",
+      },
+      {
+        "dataDetectorTypes": [],
+        "key": "back_name",
+        "label": "Nome",
+        "value": "Ana Souza",
+      },
+      {
+        "dataDetectorTypes": [],
+        "key": "back_rg",
+        "label": "RG",
+        "value": "12.345.678-9",
+      },
+      {
+        "dataDetectorTypes": [],
+        "key": "back_passport",
+        "label": "Passaporte",
+        "value": "FZ123456",
+      },
+      {
+        "attributedValue": "<a href='https://colinha.app/#c=eyJ2IjoxLCJpZCI6IjAxMjM0NTY3ODlhYmNkZWYwMTIzNDU2Nzg5YWJjZGVmIiwidHlwZSI6ImRvY3MiLCJjb2xvciI6ImdyYXBoaXRlIiwidXBkYXRlZEF0IjoxNzYyNzMyODAwMDAwLCJjcGYiOiI1Mjk5ODIyNDcyNSIsIm5hbWUiOiJBbmEgU291emEiLCJyZyI6IjEyLjM0NS42NzgtOSIsInJubSI6IiIsInBhc3Nwb3J0IjoiRloxMjM0NTYiLCJiYXJjb2RlIjp0cnVlfQ'>Editar este cartão</a>",
+        "dataDetectorTypes": [
+          "PKDataDetectorTypeLink",
+        ],
+        "key": "edit",
+        "label": "",
+        "value": "Editar este cartão",
+      },
+      {
+        "dataDetectorTypes": [],
+        "key": "disclaimer",
+        "label": "",
+        "value": "Não é documento oficial.",
+      },
+    ],
+    "primaryFields": [
+      {
+        "key": "cpf",
+        "label": "CPF",
+        "value": "529.982.247-25",
+      },
+    ],
+    "secondaryFields": [
+      {
+        "key": "name",
+        "label": "Nome",
+        "value": "Ana Souza",
+      },
+    ],
+  },
+  "labelColor": "rgb(187,187,188)",
+  "logoText": "Documentos",
+  "organizationName": "Colinha",
+  "passTypeIdentifier": "pass.app.colinha.card",
+  "serialNumber": "0123456789abcdef0123456789abcdef",
+  "teamIdentifier": "TEAMID0000",
+}
+`;
+
+exports[`buildPassJson > matches the pix snapshot 1`] = `
+{
+  "backgroundColor": "rgb(0,118,140)",
+  "barcodes": [
+    {
+      "format": "PKBarcodeFormatQR",
+      "message": "00020126370014br.gov.bcb.pix0115ana@example.com5204000053039865802BR5909Ana Souza6009Sao Paulo62070503***63044B14",
+      "messageEncoding": "iso-8859-1",
+    },
+  ],
+  "description": "Pix",
+  "foregroundColor": "rgb(255,255,255)",
+  "formatVersion": 1,
+  "generic": {
+    "auxiliaryFields": [],
+    "backFields": [
+      {
+        "dataDetectorTypes": [],
+        "key": "back_key",
+        "label": "Chave Pix",
+        "value": "ana@example.com",
+      },
+      {
+        "dataDetectorTypes": [],
+        "key": "back_name",
+        "label": "Nome",
+        "value": "Ana Souza",
+      },
+      {
+        "dataDetectorTypes": [],
+        "key": "back_city",
+        "label": "Cidade",
+        "value": "Sao Paulo",
+      },
+      {
+        "dataDetectorTypes": [],
+        "key": "back_copyPaste",
+        "label": "Pix copia e cola",
+        "value": "00020126370014br.gov.bcb.pix0115ana@example.com5204000053039865802BR5909Ana Souza6009Sao Paulo62070503***63044B14",
+      },
+      {
+        "attributedValue": "<a href='https://colinha.app/#c=eyJ2IjoxLCJpZCI6IjAxMjM0NTY3ODlhYmNkZWYwMTIzNDU2Nzg5YWJjZGVmIiwidHlwZSI6InBpeCIsImNvbG9yIjoidGVhbCIsInVwZGF0ZWRBdCI6MTc2MjczMjgwMDAwMCwia2V5IjoiYW5hQGV4YW1wbGUuY29tIiwia2V5VHlwZSI6ImVtYWlsIiwibmFtZSI6IkFuYSBTb3V6YSIsImNpdHkiOiJTYW8gUGF1bG8ifQ'>Editar este cartão</a>",
+        "dataDetectorTypes": [
+          "PKDataDetectorTypeLink",
+        ],
+        "key": "edit",
+        "label": "",
+        "value": "Editar este cartão",
+      },
+      {
+        "dataDetectorTypes": [],
+        "key": "disclaimer",
+        "label": "",
+        "value": "Não é documento oficial.",
+      },
+    ],
+    "primaryFields": [
+      {
+        "key": "key",
+        "label": "Chave Pix",
+        "value": "ana@example.com",
+      },
+    ],
+    "secondaryFields": [
+      {
+        "key": "name",
+        "label": "Nome",
+        "value": "Ana Souza",
+      },
+    ],
+  },
+  "labelColor": "rgb(230,241,244)",
+  "logoText": "Pix",
+  "organizationName": "Colinha",
+  "passTypeIdentifier": "pass.app.colinha.card",
+  "serialNumber": "0123456789abcdef0123456789abcdef",
+  "teamIdentifier": "TEAMID0000",
+}
+`;
