@@ -3,20 +3,25 @@ import { svelte } from '@sveltejs/vite-plugin-svelte';
 import { cloudflare } from '@cloudflare/vite-plugin';
 import { SITE_ORIGIN } from './src/config';
 
-const PATHS = ['/', '/pt/', '/en/'];
+/**
+ * Every public page, grouped with its translations: [pt-BR, en, x-default].
+ * Each page is listed in the sitemap with the alternates of its group.
+ */
+const GROUPS: [string, string, string][] = [
+  ['/pt/', '/en/', '/'],
+  ['/pt/cpf-na-carteira/', '/en/cpf-in-apple-wallet/', '/pt/cpf-na-carteira/'],
+  ['/pt/pix-na-carteira/', '/en/pix-in-apple-wallet/', '/pt/pix-na-carteira/'],
+];
+const PAGES = [...new Set(GROUPS.flat())];
 
 // SITE_ORIGIN (src/config.ts) is the single source for absolute URLs: it fills
 // %SITE_ORIGIN% in the HTML pages and generates robots.txt and sitemap.xml.
 function siteOrigin(): Plugin {
-  const alt = (indent: string) =>
-    [
-      ['pt-BR', '/pt/'],
-      ['en', '/en/'],
-      ['x-default', '/'],
-    ]
+  const alt = (group: [string, string, string], indent: string) =>
+    (['pt-BR', 'en', 'x-default'] as const)
       .map(
-        ([l, p]) =>
-          `${indent}<xhtml:link rel="alternate" hreflang="${l}" href="${SITE_ORIGIN}${p}"/>`,
+        (l, i) =>
+          `${indent}<xhtml:link rel="alternate" hreflang="${l}" href="${SITE_ORIGIN}${group[i]}"/>`,
       )
       .join('\n');
   return {
@@ -24,9 +29,10 @@ function siteOrigin(): Plugin {
     transformIndexHtml: (html) => html.replaceAll('%SITE_ORIGIN%', SITE_ORIGIN),
     generateBundle() {
       if (this.environment?.name !== 'client') return;
-      const urls = PATHS.map(
-        (p) => `  <url>\n    <loc>${SITE_ORIGIN}${p}</loc>\n${alt('    ')}\n  </url>`,
-      ).join('\n');
+      const urls = PAGES.map((p) => {
+        const group = GROUPS.find((g) => g.includes(p))!;
+        return `  <url>\n    <loc>${SITE_ORIGIN}${p}</loc>\n${alt(group, '    ')}\n  </url>`;
+      }).join('\n');
       this.emitFile({
         type: 'asset',
         fileName: 'sitemap.xml',
@@ -57,6 +63,10 @@ export default defineConfig({
             index: 'index.html',
             pt: 'pt/index.html',
             en: 'en/index.html',
+            ptCpf: 'pt/cpf-na-carteira/index.html',
+            ptPix: 'pt/pix-na-carteira/index.html',
+            enCpf: 'en/cpf-in-apple-wallet/index.html',
+            enPix: 'en/pix-in-apple-wallet/index.html',
           },
         },
       },

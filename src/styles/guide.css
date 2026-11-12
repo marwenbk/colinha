@@ -1,0 +1,122 @@
+/* Guide pages: plain, readable articles in the app's type and colours. */
+@import './tokens.css';
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 106.25%;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--label);
+  font: var(--t-body);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: inherit;
+}
+
+.top,
+.guide,
+.foot {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 0 var(--margin);
+}
+
+.top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 64px;
+}
+
+.brand {
+  font: var(--t-headline);
+  text-decoration: none;
+}
+
+.lang {
+  font: var(--t-footnote);
+  color: var(--label-2);
+}
+
+h1 {
+  margin: var(--s-6) 0 var(--s-3);
+  font: var(--t-large);
+}
+
+h2 {
+  margin: var(--s-8) 0 var(--s-3);
+  font: var(--t-title);
+}
+
+h3 {
+  margin: var(--s-6) 0 var(--s-1);
+  font: var(--t-headline);
+}
+
+p,
+ol {
+  margin: 0 0 var(--s-3);
+}
+
+.lead {
+  font-size: 1.0588rem; /* 18pt */
+  color: var(--label-2);
+}
+
+ol {
+  padding-left: 1.25em;
+}
+
+li + li {
+  margin-top: var(--s-2);
+}
+
+.faq p {
+  color: var(--label-2);
+}
+
+/* The example card, at Wallet's proportions, with the app's card shadow. */
+.card {
+  display: block;
+  width: min(100%, 300px);
+  height: auto;
+  margin: var(--s-6) auto var(--s-4);
+  filter: drop-shadow(0 1px 2px rgb(0 0 0 / 0.1)) drop-shadow(0 10px 24px rgb(0 0 0 / 0.16));
+}
+
+/* The one action: a black capsule, like the app's Add to wallet button. */
+.cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 50px;
+  margin: var(--s-3) auto var(--s-2);
+  padding: 0 var(--s-6);
+  width: 100%;
+  max-width: 340px;
+  border-radius: var(--r-capsule);
+  background: var(--label);
+  color: var(--bg);
+  font: var(--t-headline);
+  text-decoration: none;
+}
+
+.foot {
+  margin-top: var(--s-8);
+  padding-bottom: var(--s-8);
+  font: var(--t-footnote);
+  color: var(--label-2);
+}

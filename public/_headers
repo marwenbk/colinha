@@ -21,5 +21,11 @@
 /en/
   Cache-Control: no-cache
 
+/pt/*/
+  Cache-Control: no-cache
+
+/en/*/
+  Cache-Control: no-cache
+
 /sw.js
   Cache-Control: no-cache

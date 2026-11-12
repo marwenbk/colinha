@@ -14,11 +14,22 @@ const EN_DESC =
 
 const read = (p: string) => readFileSync(`${OUT}/${p}`, 'utf8');
 
+// Guide pages: [file, lang, own path, translation path].
+const GUIDES = [
+  { file: 'pt/cpf-na-carteira/index.html', lang: 'pt-BR', path: '/pt/cpf-na-carteira/', alt: '/en/cpf-in-apple-wallet/', h1: 'CPF na Carteira do iPhone' },
+  { file: 'pt/pix-na-carteira/index.html', lang: 'pt-BR', path: '/pt/pix-na-carteira/', alt: '/en/pix-in-apple-wallet/', h1: 'Chave Pix na Carteira do iPhone' },
+  { file: 'en/cpf-in-apple-wallet/index.html', lang: 'en', path: '/en/cpf-in-apple-wallet/', alt: '/pt/cpf-na-carteira/', h1: 'Your CPF in Apple Wallet' },
+  { file: 'en/pix-in-apple-wallet/index.html', lang: 'en', path: '/en/pix-in-apple-wallet/', alt: '/pt/pix-na-carteira/', h1: 'Your Pix key in Apple Wallet' },
+];
+
 function fresh(): boolean {
   const idx = `${OUT}/index.html`;
   if (!existsSync(idx) || !existsSync(`${OUT}/sitemap.xml`)) return false;
   const built = statSync(idx).mtimeMs;
-  const srcs = ['index.html', 'pt/index.html', 'en/index.html', 'vite.config.ts', 'src/config.ts'];
+  const srcs = [
+    'index.html', 'pt/index.html', 'en/index.html', 'vite.config.ts', 'src/config.ts',
+    ...GUIDES.map((g) => g.file),
+  ];
   return srcs.every((s) => statSync(s).mtimeMs <= built);
 }
 
@@ -73,16 +84,53 @@ describe.each(pages)('$file', (p) => {
   });
 });
 
+describe.each(GUIDES)('guide $file', (g) => {
+  const html = () => read(g.file);
+  it('has lang, one h1, canonical and its translation', () => {
+    const h = html();
+    expect(h).toContain(`<html lang="${g.lang}"`);
+    expect(h.match(/<h1>/g)).toHaveLength(1);
+    expect(h).toContain(`<h1>${g.h1}</h1>`);
+    expect(h).toContain(`<link rel="canonical" href="${ORIGIN}${g.path}"`);
+    expect(h).toContain(`href="${ORIGIN}${g.alt}"`);
+    expect(h).toMatch(/<meta name="description" content="[^"]{80,160}"/);
+  });
+  it('has valid FAQ structured data matching the visible questions', () => {
+    const h = html();
+    const ld = JSON.parse(h.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/)![1]);
+    expect(ld['@type']).toBe('FAQPage');
+    for (const q of ld.mainEntity) expect(h).toContain(`<h3>${q.name}</h3>`);
+  });
+  it('links into the app and loads nothing from other sites', () => {
+    const h = html();
+    expect(h).toContain(`class="cta" href="/${g.lang === 'en' ? 'en' : 'pt'}/"`);
+    expect(h).not.toContain('%SITE_ORIGIN%');
+    expect(h).not.toMatch(/<script(?![^>]*application\/ld\+json)[^>]*>/);
+    const resources = [...h.matchAll(/(?:src="|<link[^>]*href=")(https?:\/\/[^"]+)"/g)].map((m) => m[1]);
+    for (const u of resources) expect(u.startsWith(ORIGIN)).toBe(true);
+  });
+});
+
+describe('home pages structured data', () => {
+  it.each(['index.html', 'pt/index.html', 'en/index.html'])('%s describes a free WebApplication', (f) => {
+    const ld = JSON.parse(read(f).match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/)![1]);
+    expect(ld).toMatchObject({ '@type': 'WebApplication', name: 'Colinha', isAccessibleForFree: true });
+    expect(ld.url.startsWith(ORIGIN)).toBe(true);
+  });
+});
+
 describe('static files', () => {
-  it('sitemap lists three urls with alternates', () => {
+  it('sitemap lists every page with its translations', () => {
     const s = read('sitemap.xml');
-    for (const path of ['/', '/pt/', '/en/']) {
-      expect(s).toContain(`<loc>${ORIGIN}${path}</loc>`);
-    }
-    expect(s.match(/<url>/g)).toHaveLength(3);
+    const paths = ['/', '/pt/', '/en/', ...GUIDES.map((g) => g.path)];
+    for (const path of paths) expect(s).toContain(`<loc>${ORIGIN}${path}</loc>`);
+    expect(s.match(/<url>/g)).toHaveLength(paths.length);
+    // The three home pages share one group of alternates.
     expect(s.match(/hreflang="pt-BR" href="https:\/\/colinha\.xyz\/pt\/"/g)).toHaveLength(3);
-    expect(s.match(/hreflang="en" href="https:\/\/colinha\.xyz\/en\/"/g)).toHaveLength(3);
     expect(s.match(/hreflang="x-default" href="https:\/\/colinha\.xyz\/"/g)).toHaveLength(3);
+    // Each guide pair points at both of its pages.
+    expect(s.match(/hreflang="en" href="https:\/\/colinha\.xyz\/en\/cpf-in-apple-wallet\/"/g)).toHaveLength(2);
+    expect(s.match(/hreflang="pt-BR" href="https:\/\/colinha\.xyz\/pt\/pix-na-carteira\/"/g)).toHaveLength(2);
   });
   it('robots allows all and points at the sitemap', () => {
     const r = read('robots.txt');
