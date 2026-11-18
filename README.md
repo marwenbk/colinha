@@ -65,6 +65,18 @@ Needs OpenSSL 3 with `cms` (on macOS, Homebrew `openssl@3`); set `OPENSSL=/path/
 
 Pass Type ID certificates expire. `/api/health` shows `certNotAfter`; renew before that date. Create the new certificate under the same Pass Type ID (`pass.xyz.colinha.card`), so passes people already added stay updatable. Then run `scripts/prepare-cert.sh` again for each environment and redeploy.
 
+## Counting passes
+
+The Worker counts outcomes in Cloudflare Analytics Engine (dataset `colinha_signs`, and `colinha_signs_preview` for the preview): one data point per signed pass and per rate-limited attempt, holding only the outcome and the country Cloudflare already derives from the connection. It never records the 32-byte fingerprint, the IP address or anything from the card. Analytics Engine keeps about three months.
+
+To read the totals, create an API token with **Account › Account Analytics › Read** and run:
+
+```bash
+CLOUDFLARE_ACCOUNT_ID=<your account id> CLOUDFLARE_API_TOKEN=<token> node scripts/sign-stats.mjs
+```
+
+It prints passes signed (total, by day, by country) and rate-limited attempts. Pass a number of days and `colinha_signs_preview` as arguments to look at a shorter window or the preview.
+
 ## Before launch
 
 - The wallet glyph in `src/ui/icons/WalletIcon.svelte` is drawn for Colinha, not Apple's icon, and the Editor's button reads "Add to wallet" instead of Apple's official "Add to Apple Wallet" badge, which Apple's guidelines ask websites to use. Check this against Apple's guidelines.

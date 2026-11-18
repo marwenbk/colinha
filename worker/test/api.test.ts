@@ -45,6 +45,57 @@ const call = (req: Request, env: Env) => worker.fetch(req, env);
 
 afterEach(() => vi.restoreAllMocks());
 
+describe('signing counter (Analytics Engine)', () => {
+  const stats = () => ({ writeDataPoint: vi.fn() });
+  const withCountry = (req: Request, country: string) =>
+    new Request(req, { cf: { country } } as RequestInit);
+
+  test('a signed pass records one "signed" point with its country, nothing else', async () => {
+    const s = stats();
+    const body = new Uint8Array(32).map((_, i) => 0xa0 + i);
+    const ip = '198.51.100.77';
+    const req = withCountry(post(body, { 'cf-connecting-ip': ip }), 'BR');
+    const res = await call(req, { ...makeEnv(okLimiter()), SIGN_STATS: s });
+    expect(res.status).toBe(200);
+    expect(s.writeDataPoint).toHaveBeenCalledTimes(1);
+    expect(s.writeDataPoint).toHaveBeenCalledWith({
+      indexes: ['signed'],
+      blobs: ['signed', 'BR'],
+      doubles: [1],
+    });
+    const written = JSON.stringify(s.writeDataPoint.mock.calls);
+    expect(written).not.toContain(ip);
+    expect(written).not.toContain(hex(body));
+  });
+
+  test('a rate-limited request records "rate_limited"', async () => {
+    const s = stats();
+    const refuse = { limit: vi.fn(async () => ({ success: false })) };
+    const res = await call(post(new Uint8Array(32)), { ...makeEnv(refuse), SIGN_STATS: s });
+    expect(res.status).toBe(429);
+    expect(s.writeDataPoint).toHaveBeenCalledWith({
+      indexes: ['rate_limited'],
+      blobs: ['rate_limited', 'XX'],
+      doubles: [1],
+    });
+  });
+
+  test('rejected requests record nothing', async () => {
+    const s = stats();
+    const env = { ...makeEnv(okLimiter()), SIGN_STATS: s };
+    await call(post(new Uint8Array(5)), env); // 400
+    await call(post(new Uint8Array(32), { 'Sec-Fetch-Site': 'cross-site' }), env); // 403
+    await call(new Request('https://x/api/sign'), env); // 405
+    expect(s.writeDataPoint).not.toHaveBeenCalled();
+  });
+
+  test('a failing counter never blocks signing', async () => {
+    const broken = { writeDataPoint: vi.fn(() => { throw new Error('down'); }) };
+    const res = await call(post(new Uint8Array(32)), { ...makeEnv(okLimiter()), SIGN_STATS: broken });
+    expect(res.status).toBe(200);
+  });
+});
+
 describe('POST /api/sign', () => {
   test('200 with a verifying DER signature and hardening headers', async () => {
     const digest = await sha256(manifestBytes);

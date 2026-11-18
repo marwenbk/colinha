@@ -71,6 +71,18 @@ async function readExactly32(request: Request): Promise<Uint8Array | null> {
   return n === 32 ? out : null;
 }
 
+type Outcome = 'signed' | 'rate_limited';
+
+/** Records one outcome: no body, no IP, only what Cloudflare already knows (the country). */
+function count(env: Env, request: Request, outcome: Outcome) {
+  const country = (request as Request & { cf?: { country?: string } }).cf?.country ?? 'XX';
+  try {
+    env.SIGN_STATS?.writeDataPoint({ indexes: [outcome], blobs: [outcome, country], doubles: [1] });
+  } catch {
+    // Counting must never break signing.
+  }
+}
+
 async function sign(request: Request, env: Env): Promise<Response> {
   if (request.method !== 'POST')
     return text(405, 'Method not allowed', { Allow: 'POST' });
@@ -81,7 +93,10 @@ async function sign(request: Request, env: Env): Promise<Response> {
   if (env.SIGN_LIMITER) {
     const key = request.headers.get('cf-connecting-ip') ?? 'unknown';
     const { success } = await env.SIGN_LIMITER.limit({ key });
-    if (!success) return text(429, 'Too many requests');
+    if (!success) {
+      count(env, request, 'rate_limited');
+      return text(429, 'Too many requests');
+    }
   }
 
   const declared = request.headers.get('Content-Length');
@@ -92,6 +107,7 @@ async function sign(request: Request, env: Env): Promise<Response> {
   try {
     const signer = await loadSigner(env);
     const der = await signDetached(digest, signer, new Date());
+    count(env, request, 'signed');
     return new Response(der, {
       headers: { 'Content-Type': 'application/octet-stream', ...HARDENING },
     });

@@ -21,6 +21,10 @@
           "simple": { "limit": 20, "period": 60 },
         },
       ],
+      // One data point per signed or rate-limited request (outcome + country).
+      "analytics_engine_datasets": [
+        { "binding": "SIGN_STATS", "dataset": "colinha_signs_preview" },
+      ],
       "observability": {
         "enabled": false,
         "logs": { "invocation_logs": false },
@@ -35,6 +39,10 @@
           "namespace_id": "1001",
           "simple": { "limit": 20, "period": 60 },
         },
+      ],
+      // One data point per signed or rate-limited request (outcome + country).
+      "analytics_engine_datasets": [
+        { "binding": "SIGN_STATS", "dataset": "colinha_signs" },
       ],
       "observability": {
         "enabled": false,
