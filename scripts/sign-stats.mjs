@@ -1,30 +1,72 @@
 // Prints how many passes were signed: in total, by day and by country, plus
 // rate-limited attempts. Reads the Worker's Analytics Engine counter.
 //
-// Usage: CLOUDFLARE_ACCOUNT_ID=... CLOUDFLARE_API_TOKEN=... node scripts/sign-stats.mjs [days] [dataset]
+// Usage: node scripts/sign-stats.mjs [days] [dataset]
 //   days     how far back, default 90 (Analytics Engine keeps about 3 months)
 //   dataset  colinha_signs (production, default) or colinha_signs_preview
 //
-// The token needs one permission: Account > Account Analytics > Read.
-const account = process.env.CLOUDFLARE_ACCOUNT_ID;
-const token = process.env.CLOUDFLARE_API_TOKEN;
+// Credentials: uses Wrangler's login (`pnpm wrangler login`) by default.
+// CLOUDFLARE_API_TOKEN (Account Analytics: Read) and CLOUDFLARE_ACCOUNT_ID
+// override it, for CI or another machine.
+import { execFileSync } from 'node:child_process';
+import { readFileSync } from 'node:fs';
+import { homedir } from 'node:os';
+import { join } from 'node:path';
+
 const days = Number(process.argv[2] ?? 90);
 const dataset = process.argv[3] ?? 'colinha_signs';
-
-if (!account || !token) {
-  console.error('Set CLOUDFLARE_ACCOUNT_ID and CLOUDFLARE_API_TOKEN (Account Analytics: Read).');
-  process.exit(2);
-}
 if (!Number.isInteger(days) || days < 1 || !/^[a-z_]+$/.test(dataset)) {
   console.error('usage: node scripts/sign-stats.mjs [days] [dataset]');
   process.exit(2);
 }
 
+/** Wrangler's OAuth token, refreshed by running `wrangler whoami` first. */
+function wranglerToken() {
+  try {
+    execFileSync('pnpm', ['-s', 'wrangler', 'whoami'], { stdio: 'ignore' });
+  } catch {
+    // whoami fails when logged out; the read below then finds no token.
+  }
+  const dirs = [
+    join(homedir(), 'Library/Preferences/.wrangler/config/default.toml'),
+    join(homedir(), '.config/.wrangler/config/default.toml'),
+    join(homedir(), '.wrangler/config/default.toml'),
+  ];
+  for (const f of dirs) {
+    try {
+      const m = readFileSync(f, 'utf8').match(/^oauth_token = "([^"]+)"/m);
+      if (m) return m[1];
+    } catch {
+      // try the next location
+    }
+  }
+  return undefined;
+}
+
+const token = process.env.CLOUDFLARE_API_TOKEN ?? wranglerToken();
+if (!token) {
+  console.error('Not logged in: run `pnpm wrangler login`, or set CLOUDFLARE_API_TOKEN.');
+  process.exit(2);
+}
+const api = (path, init) =>
+  fetch(`https://api.cloudflare.com/client/v4${path}`, {
+    ...init,
+    headers: { Authorization: `Bearer ${token}`, ...(init?.headers ?? {}) },
+  });
+
+let account = process.env.CLOUDFLARE_ACCOUNT_ID;
+if (!account) {
+  const res = await api('/accounts');
+  const list = (await res.json()).result ?? [];
+  if (list.length !== 1) {
+    console.error(`Found ${list.length} accounts; set CLOUDFLARE_ACCOUNT_ID.`);
+    process.exit(2);
+  }
+  account = list[0].id;
+}
+
 async function sql(query) {
-  const res = await fetch(
-    `https://api.cloudflare.com/client/v4/accounts/${account}/analytics_engine/sql`,
-    { method: 'POST', headers: { Authorization: `Bearer ${token}` }, body: query },
-  );
+  const res = await api(`/accounts/${account}/analytics_engine/sql`, { method: 'POST', body: query });
   const text = await res.text();
   if (!res.ok) throw new Error(`Analytics Engine answered ${res.status}: ${text}`);
   return JSON.parse(text).data;

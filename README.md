@@ -69,13 +69,13 @@ Pass Type ID certificates expire. `/api/health` shows `certNotAfter`; renew befo
 
 The Worker counts outcomes in Cloudflare Analytics Engine (dataset `colinha_signs`, and `colinha_signs_preview` for the preview): one data point per signed pass and per rate-limited attempt, holding only the outcome and the country Cloudflare already derives from the connection. It never records the 32-byte fingerprint, the IP address or anything from the card. Analytics Engine keeps about three months.
 
-To read the totals, create an API token with **Account › Account Analytics › Read** and run:
+To read the totals, run:
 
 ```bash
-CLOUDFLARE_ACCOUNT_ID=<your account id> CLOUDFLARE_API_TOKEN=<token> node scripts/sign-stats.mjs
+node scripts/sign-stats.mjs
 ```
 
-It prints passes signed (total, by day, by country) and rate-limited attempts. Pass a number of days and `colinha_signs_preview` as arguments to look at a shorter window or the preview.
+It uses your Wrangler login (`pnpm wrangler login`) and prints passes signed (total, by day, by country) and rate-limited attempts. Pass a number of days and `colinha_signs_preview` as arguments to look at a shorter window or the preview. On another machine or in CI, set `CLOUDFLARE_API_TOKEN` (a token with **Account › Account Analytics › Read**) and `CLOUDFLARE_ACCOUNT_ID` instead.
 
 ## Before launch
 
